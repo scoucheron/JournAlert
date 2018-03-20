@@ -33,7 +33,36 @@ def initializeDatabase(c):
 
     return 0
 
+<<<<<<< HEAD
 def createPatient(patient_id, name, journal_id, c):
+=======
+
+def fillJournAlert(patient_number, schedule_number, employee_number):
+    '''
+    Fills the log databse with fake data (only have to do this once)
+        Input:
+            @conn: a connection to the JournAlert database
+            @patient_number: number of patients to add (has to be equal to number of journals)
+            @schedule_number: number of appointments to create (less than patients)
+            @employee_number: number of employees to create (less than patients)
+    '''
+
+
+def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
+    '''
+    NB! HAS TO BE CALLED AFTER journalert.db IS FILLED
+    Fills the log databse with fake data (only have to do this once)
+        Input:
+            @entries: how many entries in the log that is to be created
+            @green_percentage: percentage of green entries
+            @orange_percentage: percentage of orange entries
+            @red_percentage: percentage of red entries
+
+    '''
+
+
+def createPatient():
+>>>>>>> cb3153e5ac707b4867b09c59d9134e27b83b31a8
     '''
     Create a patient with a journal (use help-function)
         Input:
@@ -42,6 +71,12 @@ def createPatient(patient_id, name, journal_id, c):
             @journal_id
 
     '''
+<<<<<<< HEAD
+=======
+
+
+    return 0
+>>>>>>> cb3153e5ac707b4867b09c59d9134e27b83b31a8
 
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
     conn.commit()
@@ -104,23 +139,36 @@ def createEntry(patient_id, employee_id, timeFrom, timeTo):
 
     return 0
 
-def printRedEntries():
+def printLogEntry(color):
     '''
     Prints all the red entries
-        Input: Log
-    '''
-    return 0
+        Input: Color of wanted entries
 
-def printOrangeEntries():
+        Colors:
+            GREEN == 1
+            ORANGE == 2
+            RED == 3
     '''
-    Prints all the orange entries
-        Input: Log
-    '''
-    return 0
 
-def printGreenEntries():
-    '''
-    Prints all the green entries
-        Input: Log
-    '''
-    return 0
+    # Make sure the color is correct and that there will be no errors
+    if(color == 1):
+        symbol = ('GREEN',)
+    elif(color == 2):
+        symbol = ('ORANGE',)
+    elif(color == 3):
+        symbol = ('RED',)
+    else:
+        print("Input color was wrong. (Has to be green [1], orange [2] or red [3]")
+        return 0
+
+    # Create a connection to the log database
+    conn = sqlite3.connect('log.db')
+    c. = conn.cursor()
+
+    # Fetch all entries in the log with a given warning level (gree,orange,red) and print them
+    print(x.fetchall())
+    for row in c.execute('SELECT * FROM entries WHERE warning_level=?', symbol)
+        print(row)
+
+    # Close the connection
+    conn.close()
