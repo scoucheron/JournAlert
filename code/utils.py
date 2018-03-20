@@ -33,7 +33,7 @@ def initializeDatabase(c):
 
     return 0
 
-def createPatient(c):
+def createPatient(patient_id, name, journal_id, c):
     '''
     Create a patient with a journal (use help-function)
         Input:
@@ -42,33 +42,41 @@ def createPatient(c):
             @journal_id
 
     '''
-    return 0
 
-def createEmployee(c):
+    c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
+    conn.commit()
+
+def createEmployee(employee_id, c):
     '''
     Create a employee
         Input:
             @employee_id
     '''
-    return 0
 
-def deletePatient(c):
+    c.execute("INSERT INTO employees VALUES (?)", (employee_id))
+    conn.commit()
+
+def deletePatient(patient_id, c):
     '''
     Delete an appointment from the schedule
         Input:
             @patient_id
     '''
-    return 0
+    c.execute("DELETE patients WHERE patient_id=?", (patient_id))
+    conn.commit()
 
-def deleteEmployee(c):
+
+def deleteEmployee(employee_id, c):
     '''
     Delete an employee the schema
         Input:
             @employee_id
     '''
-    return 0
 
-def deleteAppointment(c):
+    c.execute("DELETE employees WHERE employee_id=?", (employee_id))
+    conn.commit()
+
+def deleteAppointment(journal_id, c):
     '''
     Delete an appointment from the schedule
         Input:
@@ -76,8 +84,9 @@ def deleteAppointment(c):
         Output:
             Boolean -> If it was done or not (need an exception)
     '''
-    return 0
 
+    c.execute("DELETE schedules WHERE journal_id=?", (journal_id))
+    conn.commit()
 
 def createEntry(patient_id, employee_id, timeFrom, timeTo):
     '''
@@ -88,6 +97,11 @@ def createEntry(patient_id, employee_id, timeFrom, timeTo):
         Output:
             An entry in the schedule containing a @patient_id, @employee_id, a time from and a time to
     '''
+
+    c.execute("INSERT INTO schedules VALUES (?, ?)", (patient_id, employee_id))
+    conn.commit()
+    print "lol"
+
     return 0
 
 def printRedEntries():
