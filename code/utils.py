@@ -1,10 +1,36 @@
 import sqlite3
 
-def initializeDatabase():
+# conn = sqlite3.connect('journalert.db')
+# c = conn.cursor()
+
+
+
+def initializeDatabase(c):
     '''
     Initialization of the database (only have to do this once)
         ### ADD SCHEMA DESCRIPTION
     '''
+
+    c.execute("""CREATE TABLE patients(id integer PRIMARY KEY, name text, journal text)""")
+    c.execute("""CREATE TABLE employees(id integer PRIMARY KEY)""")
+    c.execute("""CREATE TABLE schedule(id integer PRIMARY KEY, patient_id integer, employee_id integer, time_start text, time_end text,
+                FOREIGN KEY(patient_id) REFERENCES patient(id)),
+                FOREIGN KEY(emplyee_id) REFERENCES employee(id)""")
+    c.execute("""CREATE TABLE journals(patient_id integer,
+                FOREIGN KEY(patient_id) REFERENCES patient(id))""")
+
+
+    conn.commit()
+
+
+
+    #Database for the logEntry
+    conn_log = sqlite3.connect('log.db')
+    c_log = conn_log.cursor()
+
+    c_log.execute("""CREATE TABLE entries(patient_id, employee_id, timestamp)""")
+
+
     return 0
 
 
