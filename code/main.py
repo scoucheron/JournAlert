@@ -1,5 +1,6 @@
 from utils import *
 
+
 def fetchJournal(patient_id, employee_id):
 	'''
 	Fetches the journal for a given patient. Only allowed if the given employee_id is an actual employee.
@@ -10,6 +11,13 @@ def fetchJournal(patient_id, employee_id):
 		Output:
 			A journal from a patient (fetches the ID)
 	'''
+
+
+
+
+
+
+
 
     return 0
 
