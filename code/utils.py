@@ -6,7 +6,7 @@ def initializeDatabase():
     '''
     return 0
 
-def createPatient():
+def createPatient(patient_id, name, journal_id, c):
     '''
     Create a patient with a journal (use help-function)
         Input:
@@ -15,7 +15,9 @@ def createPatient():
             @journal_id
 
     '''
-    return 0
+
+    c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
+
 
 def createEmployee():
     '''
@@ -23,7 +25,9 @@ def createEmployee():
         Input:
             @employee_id
     '''
-    return 0
+    c.execute("INSERT INTO employees VALUES (employee_id)")
+    c.execute("INSERT INTO employees VALUES (?)", (employee_id))
+
 
 def deletePatient():
     '''
@@ -31,6 +35,7 @@ def deletePatient():
         Input:
             @patient_id
     '''
+    c.execute("INSERT INTO employees VALUES (employee_id)")
     return 0
 
 def deleteEmployee():
