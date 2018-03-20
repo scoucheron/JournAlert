@@ -58,7 +58,6 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
             @green_percentage: percentage of green entries
             @orange_percentage: percentage of orange entries
             @red_percentage: percentage of red entries
-
     '''
 
     # Calculate how many of each entry there is
@@ -88,15 +87,15 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         appoint = c.fetchone()
 
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(x, appoint[2], appoint[3], appoint[4])
+        createLogEntry(appoint[2], appoint[3], appoint[4], conn_log, c_log)
 
     # Create orange entries
     for x in range(number_orange):
-        createLogEntry(x, patient_id, employee, time_now)
+        createLogEntry(patient_id, employee, time_now,, conn_log, c_log)
 
     # Create red entries
     for x in range(number_red):
-        createLogEntry(x, patient_id, employee, time_now)
+        createLogEntry(patient_id, employee, time_now,, conn_log, c_log)
 
 
 def createPatient():
@@ -130,6 +129,13 @@ def deletePatient(patient_id, conn, c):
     c.execute("DELETE patients WHERE patient_id=?", (patient_id))
     conn.commit()
 
+    ''' asserting that the row has been deleted '''
+    c.execute("SELECT patient_id FROM patients WHERE patient_id = ?", (patient_id))
+    data = c.fetchone()
+    if data is None:
+        return True
+    else:
+        return False
 
 def deleteEmployee(employee_id, conn, c):
     '''
@@ -140,6 +146,15 @@ def deleteEmployee(employee_id, conn, c):
 
     c.execute("DELETE employees WHERE employee_id=?", (employee_id))
     conn.commit()
+
+    ''' asserting that the row has been deleted '''
+    c.execute("SELECT employee_id FROM employees WHERE employee_id = ?", (employee_id))
+    data = c.fetchone()
+    if data is None:
+        return True
+    else:
+        return False
+
 
 def deleteAppointment(appointment_id, conn, c):
     '''
@@ -158,7 +173,7 @@ def createAppointment(patient_id, employee_id, timeFrom, timeTo, conn, c):
     Create an entry in the schedule
         Input:
             @patient_id: the ID of the patient to fetch the journal from
-            @employee_id: The ID for the employee which
+            @employee_id: The ID for the employee
         Output:
             An entry in the schedule containing a @patient_id, @employee_id, a time from and a time to
     '''
@@ -166,7 +181,19 @@ def createAppointment(patient_id, employee_id, timeFrom, timeTo, conn, c):
     c.execute("INSERT INTO schedules VALUES (?, ?, ?, ?)", (patient_id, employee_id, timeFrom, timeTo))
     conn.commit()
 
-    return 0
+def createLogEntry(patient_id, employee_id, timestamp, conn, c):
+    '''
+    Create an entry in the log
+        Input:
+            @patient_id: the ID of the patient to fetch the journal from
+            @employee_id: The ID for the employee
+            @timestamp:  Date and time
+        Output:
+            An entry in the log containing @patient_id, @employee_id, @timestamp
+    '''
+    c.execute("INSERT INTO entries VALUES (?, ?, ?)", (patient_id, employee_id, timestamp))
+    conn.commit()
+
 
 def printLogEntry(color):
     '''
