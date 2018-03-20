@@ -73,6 +73,7 @@ def createEntry(patient_id, employee_id, timeFrom, timeTo):
 
     c.execute("INSERT INTO schedules VALUES (?, ?)", (patient_id, employee_id))
     conn.commit()
+    print "lol"
 
     return 0
 
