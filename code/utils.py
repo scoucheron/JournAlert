@@ -13,7 +13,7 @@ def initializeDatabase(c):
 
     c.execute("""CREATE TABLE patients(id integer PRIMARY KEY, name text, journal text)""")
     c.execute("""CREATE TABLE employees(id integer PRIMARY KEY)""")
-    c.execute("""CREATE TABLE schedule(patient_id integer, employee_id integer, time_start text, time_end text,
+    c.execute("""CREATE TABLE schedule(id integer PRIMARY KEY, patient_id integer, employee_id integer, time_start text, time_end text,
                 FOREIGN KEY(patient_id) REFERENCES patient(id)),
                 FOREIGN KEY(emplyee_id) REFERENCES employee(id)""")
     c.execute("""CREATE TABLE journals(patient_id integer,
@@ -33,9 +33,6 @@ def initializeDatabase(c):
 
     return 0
 
-<<<<<<< HEAD
-def createPatient(patient_id, name, journal_id, c):
-=======
 
 def fillJournAlert(patient_number, schedule_number, employee_number):
     '''
@@ -46,6 +43,16 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
             @schedule_number: number of appointments to create (less than patients)
             @employee_number: number of employees to create (less than patients)
     '''
+
+
+
+
+
+
+
+
+
+
 
 
 def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
@@ -62,7 +69,6 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
 
 
 def createPatient():
->>>>>>> cb3153e5ac707b4867b09c59d9134e27b83b31a8
     '''
     Create a patient with a journal (use help-function)
         Input:
@@ -71,12 +77,9 @@ def createPatient():
             @journal_id
 
     '''
-<<<<<<< HEAD
-=======
 
 
     return 0
->>>>>>> cb3153e5ac707b4867b09c59d9134e27b83b31a8
 
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
     conn.commit()
