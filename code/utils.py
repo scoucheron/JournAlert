@@ -130,17 +130,30 @@ def deleteAppointment(appointment_id, conn, c):
     else:
         return False
 
-def createEntry(patient_id, employee_id, timeFrom, timeTo, conn, c):
+def createAppointment(patient_id, employee_id, timeFrom, timeTo, conn, c):
     '''
     Create an entry in the schedule
         Input:
             @patient_id: the ID of the patient to fetch the journal from
-            @employee_id: The ID for the employee which
+            @employee_id: The ID for the employee
         Output:
             An entry in the schedule containing a @patient_id, @employee_id, a time from and a time to
     '''
 
     c.execute("INSERT INTO schedules VALUES (?, ?, ?, ?)", (patient_id, employee_id, timeFrom, timeTo))
+    conn.commit()
+
+def createLogEntry(patient_id, employee_id, timestamp, conn, c):
+    '''
+    Create an entry in the log
+        Input:
+            @patient_id: the ID of the patient to fetch the journal from
+            @employee_id: The ID for the employee
+            @timestamp:  Date and time
+        Output:
+            An entry in the log containing @patient_id, @employee_id, @timestamp
+    '''
+    c.execute("INSERT INTO entries VALUES (?, ?, ?)", (patient_id, employee_id, timestamp))
     conn.commit()
 
 
