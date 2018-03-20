@@ -1,10 +1,5 @@
 import sqlite3
 
-# conn = sqlite3.connect('journalert.db')
-# c = conn.cursor()
-
-
-
 def initializeDatabase(c):
     '''
     Initialization of the database (only have to do this once)
@@ -55,6 +50,8 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
             @red_percentage: percentage of red entries
     '''
 
+
+
 def createPatient():
     '''
     Create a patient with a journal (use help-function)
@@ -64,8 +61,6 @@ def createPatient():
             @journal_id
 
     '''
-    return 0
-
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
     conn.commit()
 
