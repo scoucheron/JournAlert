@@ -9,7 +9,7 @@ def initializeDatabase(c):
 
     c.execute("""CREATE TABLE patients(id integer PRIMARY KEY, name text, journal text)""")
     c.execute("""CREATE TABLE employees(id integer PRIMARY KEY)""")
-    c.execute("""CREATE TABLE schedule(id integer PRIMARY KEY, patient_id integer, employee_id integer, time_start text, time_end text,
+    c.execute("""CREATE TABLE schedule(id integer PRIMARY KEY, patient_id integer, employee_id integer, date text, timeFrom text, timeTo text,
                 FOREIGN KEY(patient_id) REFERENCES patient(id)),
                 FOREIGN KEY(emplyee_id) REFERENCES employee(id)""")
     c.execute("""CREATE TABLE journals(patient_id integer,
@@ -44,7 +44,79 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
             @employee_number: number of employees to create (less than patients)
     '''
 
-    conn = sqlite3.connect('log.db)')
+
+    conn = sqlite3.connect('journalert.db')
+    c = conn.cursor()
+
+
+    for i in range(patient_number):
+        createPatient(i, c)
+
+    for i in range(employee_number):
+        createPatient(i,c)
+
+    year        = "2018"
+    month       = "05"
+    day         = "01"
+    hourFrom    = "00"
+    minFrom     = "00"
+    minTo       = "00"
+
+    # TO DO: make employees that haas no appointments
+    for i in range(schedule_number):
+        # choose random patients
+        patient = random.randint(0, patient_number-1)
+        # choose random employee
+        employee = random.randint(0, employee_number-1)
+
+        # new day
+        if int(hourFrom) == 23:
+            minTo = "59"
+            hourTo = hourFrom
+        else:
+            hourTo = str(int(hourFrom)+1)
+
+        if int(hourFrom) <= 9 and hourFrom != "00": x = "0"
+        else: x = ""
+
+        if int(hourTo) <= 9: y = "0"
+        else: y = ""
+
+        if int(month) <= 9: z = "0"
+        else: y = ""
+
+        if int(day) <= 9: k = "0"
+        else: k = ""
+
+        date        = k + day + "." + z + month + "." + year + " "
+        timeFrom    = x + str(hourFrom) + ":" + str(minFrom)
+        timeTo      = y + str(hourTo) + ":" + str(minTo)
+
+        createAppointment(patient, employee, date+timeFrom, date+timeTo)
+
+        # Move time to next appointment
+        # Assume 28 days in every month
+
+        # New day
+        if int(hourFrom) == 23:
+            hourFrom = "00"
+            minTo = "00"
+            day = str(int(day)+1)
+
+            # New month
+            if int(day) == 28:
+                day = "1"
+                month = str(int(month)+1)
+            # New year
+            if month == "12":
+                month = "1"
+                year = str(int(year)+1)
+
+        else:
+            hourFrom = str(int(hourFrom) + 1)
+
+
+
 
 
 def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
