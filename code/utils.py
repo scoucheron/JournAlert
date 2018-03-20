@@ -30,7 +30,6 @@ def initializeDatabase(c):
 
     c_log.execute("""CREATE TABLE entries(patient_id, employee_id, timestamp)""")
 
-
     return 0
 
 
@@ -45,16 +44,6 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
     '''
 
 
-
-
-
-
-
-
-
-
-
-
 def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
     '''
     NB! HAS TO BE CALLED AFTER journalert.db IS FILLED
@@ -64,9 +53,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
             @green_percentage: percentage of green entries
             @orange_percentage: percentage of orange entries
             @red_percentage: percentage of red entries
-
     '''
-
 
 def createPatient():
     '''
@@ -77,8 +64,6 @@ def createPatient():
             @journal_id
 
     '''
-
-
     return 0
 
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
@@ -126,6 +111,7 @@ def deleteAppointment(appointment_id, conn, c):
     c.execute("DELETE schedules WHERE id=?", (appointment_id))
     conn.commit()
 
+
 def createEntry(patient_id, employee_id, timeFrom, timeTo, conn, c):
     '''
     Create an entry in the schedule
@@ -138,6 +124,7 @@ def createEntry(patient_id, employee_id, timeFrom, timeTo, conn, c):
 
     c.execute("INSERT INTO schedules VALUES (?, ?, ?, ?)", (patient_id, employee_id, timeFrom, timeTo))
     conn.commit()
+
 
     return 0
 
