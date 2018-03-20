@@ -221,8 +221,6 @@ def createLogEntry(patient_id, employee_id, timestamp, conn, c):
     conn.commit()
 
 
-
-
 def printLogEntry(color):
     '''
     Prints all the red entries
