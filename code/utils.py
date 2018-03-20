@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 
 def initializeDatabase(c):
     '''
@@ -13,11 +14,11 @@ def initializeDatabase(c):
                 FOREIGN KEY(emplyee_id) REFERENCES employee(id)""")
     c.execute("""CREATE TABLE journals(patient_id integer,
                 FOREIGN KEY(patient_id) REFERENCES patient(id))""")
+    # Save the changes
+    c.commit()
 
-
-    conn.commit()
-
-
+    #Close the connection
+    c.close()
 
     #Database for the logEntry
     conn_log = sqlite3.connect('log.db')
@@ -25,6 +26,11 @@ def initializeDatabase(c):
 
     c_log.execute("""CREATE TABLE entries(patient_id, employee_id, timestamp)""")
 
+    #Save the changes
+    c_log.commit()
+
+    #Close the connection
+    conn_log.close()
     return 0
 
 
@@ -38,10 +44,14 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
             @employee_number: number of employees to create (less than patients)
     '''
 
+    conn = sqlite3.connect('log.db)')
+
 
 def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
     '''
     NB! HAS TO BE CALLED AFTER journalert.db IS FILLED
+    NB2! percentages has to be 100 in total
+
     Fills the log databse with fake data (only have to do this once)
         Input:
             @entries: how many entries in the log that is to be created
@@ -51,6 +61,42 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
 
     '''
 
+    # Calculate how many of each entry there is
+    total_percentage = green_percentage + orange_percentage + red_percentage
+
+    # Has to be 100% in total
+    if(total_percentage != 100):
+        sys.exit("The given percentages did not add up to 100")
+
+    number_green = entry_number * (green_percentage/100)
+    number_orange = entry_number * (orange_percentage/100)
+    number_red = entry_number * (red_percentage/100)
+
+
+    # Open a connection to the log
+    conn_log = sqlite3.connect('log.db')
+    c_log = conn_log.cursor()
+
+    # Open a connection to the JournAlert database
+    conn = sqlite3('journalert.db')
+    c = c.cursor()
+
+    # Create green entries
+    for x in range(number_green):
+        c.execute('SELECT * FROM schedule')
+        # Fetch an entry
+        appoint = c.fetchone()
+
+        # Create an entry in the log with the correct time of checking the journal
+        createLogEntry(x, appoint[2], appoint[3], appoint[4])
+
+    # Create orange entries
+    for x in range(number_orange):
+        createLogEntry(x, patient_id, employee, time_now)
+
+    # Create red entries
+    for x in range(number_red):
+        createLogEntry(x, patient_id, employee, time_now)
 
 
 def createPatient():
@@ -107,7 +153,7 @@ def deleteAppointment(appointment_id, conn, c):
     c.execute("DELETE schedules WHERE id=?", (appointment_id))
     conn.commit()
 
-def createEntry(patient_id, employee_id, timeFrom, timeTo, conn, c):
+def createAppointment(patient_id, employee_id, timeFrom, timeTo, conn, c):
     '''
     Create an entry in the schedule
         Input:
