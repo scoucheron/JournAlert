@@ -1,7 +1,5 @@
 from utils import *
-import sqlite3
 
-conn = sqlite3.connect('journalert.db')
 
 def fetchJournal(patient_id, employee_id):
 	'''
@@ -13,6 +11,13 @@ def fetchJournal(patient_id, employee_id):
 		Output:
 			A journal from a patient (fetches the ID)
 	'''
+
+
+
+
+
+
+
 
     return 0
 
