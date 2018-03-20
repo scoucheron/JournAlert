@@ -83,6 +83,13 @@ def deletePatient(patient_id, conn, c):
     c.execute("DELETE patients WHERE patient_id=?", (patient_id))
     conn.commit()
 
+    ''' asserting that the row has been deleted '''
+    c.execute("SELECT patient_id FROM patients WHERE patient_id = ?", (patient_id))
+    data = c.fetchone()
+    if data is None:
+        return True
+    else:
+        return False
 
 def deleteEmployee(employee_id, conn, c):
     '''
@@ -93,6 +100,15 @@ def deleteEmployee(employee_id, conn, c):
 
     c.execute("DELETE employees WHERE employee_id=?", (employee_id))
     conn.commit()
+
+    ''' asserting that the row has been deleted '''
+    c.execute("SELECT employee_id FROM employees WHERE employee_id = ?", (employee_id))
+    data = c.fetchone()
+    if data is None:
+        return True
+    else:
+        return False
+
 
 def deleteAppointment(appointment_id, conn, c):
     '''
@@ -106,6 +122,13 @@ def deleteAppointment(appointment_id, conn, c):
     c.execute("DELETE schedules WHERE id=?", (appointment_id))
     conn.commit()
 
+    ''' asserting that the row has been deleted '''
+    c.execute("SELECT id FROM schedules WHERE id = ?", (appointment_id))
+    data = c.fetchone()
+    if data is None:
+        return True
+    else:
+        return False
 
 def createEntry(patient_id, employee_id, timeFrom, timeTo, conn, c):
     '''
@@ -120,8 +143,6 @@ def createEntry(patient_id, employee_id, timeFrom, timeTo, conn, c):
     c.execute("INSERT INTO schedules VALUES (?, ?, ?, ?)", (patient_id, employee_id, timeFrom, timeTo))
     conn.commit()
 
-
-    return 0
 
 def printLogEntry(color):
     '''
