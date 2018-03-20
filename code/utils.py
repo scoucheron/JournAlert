@@ -91,11 +91,22 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
 
     # Create orange entries
     for x in range(number_orange):
-        createLogEntry(patient_id, employee, time_now,, conn_log, c_log)
+        c.execute('SELECT * FROM schedule')
+        # Fetch an entry
+        appoint = c.fetchone()
+
+        # Create an entry in the log with the correct time of checking the journal
+        createLogEntry(appoint[2], appoint[3], appoint[4], conn_log, c_log)
 
     # Create red entries
     for x in range(number_red):
-        createLogEntry(patient_id, employee, time_now,, conn_log, c_log)
+        c.execute('SELECT patient_id FROM patient WHERE NOT EXISTS ( SELECT  FROM schedule)')
+        appoint = c.fetchone()
+
+        c.execute('SELECT * from employees')
+        e_id = c.fetchone()
+        # Create an entry in the log with the correct time of checking the journal
+        createLogEntry(patient_id, e_id, '20.03.2018 14:00', conn_log, c_log)
 
 
 def createPatient(patient_id, name, journal_id, conn, c):
@@ -215,7 +226,8 @@ def createLogEntry(patient_id, employee_id, timestamp, conn, c):
 def printLogEntry(color):
     '''
     Prints all the red entries
-        Input: Color of wanted entries
+        Input:
+            @color: a code of the urgency of a journal-check
 
         Colors:
             GREEN == 1
@@ -231,8 +243,7 @@ def printLogEntry(color):
     elif(color == 3):
         symbol = ('RED',)
     else:
-        print("Input color was wrong. (Has to be green [1], orange [2] or red [3]")
-        return 0
+        sys.exit("Input color was wrong. (Has to be green [1], orange [2] or red [3]")
 
     # Create a connection to the log database
     conn = sqlite3.connect('log.db')
