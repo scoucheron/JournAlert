@@ -98,7 +98,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         createLogEntry(patient_id, employee, time_now,, conn_log, c_log)
 
 
-def createPatient():
+def createPatient(patient_id, name, journal_id, conn, c):
     '''
     Create a patient with a journal (use help-function)
         Input:
@@ -110,6 +110,13 @@ def createPatient():
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
     conn.commit()
 
+    c.execute("SELECT id FROM patients WHERE id = ?", (patient_id))
+    data = c.fetchone()
+    if data is None:
+        return False
+    else:
+        return True
+
 def createEmployee(employee_id, conn, c):
     '''
     Create a employee
@@ -120,17 +127,24 @@ def createEmployee(employee_id, conn, c):
     c.execute("INSERT INTO employees VALUES (?)", (employee_id))
     conn.commit()
 
+    c.execute("SELECT id FROM employees WHERE id = ?", (employee_id))
+    data = c.fetchone()
+    if data is None:
+        return False
+    else:
+        return True
+
 def deletePatient(patient_id, conn, c):
     '''
     Delete an appointment from the schedule
         Input:
             @patient_id
     '''
-    c.execute("DELETE patients WHERE patient_id=?", (patient_id))
+    c.execute("DELETE patients WHERE id=?", (patient_id))
     conn.commit()
 
     ''' asserting that the row has been deleted '''
-    c.execute("SELECT patient_id FROM patients WHERE patient_id = ?", (patient_id))
+    c.execute("SELECT id FROM patients WHERE id = ?", (patient_id))
     data = c.fetchone()
     if data is None:
         return True
@@ -144,11 +158,11 @@ def deleteEmployee(employee_id, conn, c):
             @employee_id
     '''
 
-    c.execute("DELETE employees WHERE employee_id=?", (employee_id))
+    c.execute("DELETE employees WHERE id=?", (employee_id))
     conn.commit()
 
     ''' asserting that the row has been deleted '''
-    c.execute("SELECT employee_id FROM employees WHERE employee_id = ?", (employee_id))
+    c.execute("SELECT id FROM employees WHERE id = ?", (employee_id))
     data = c.fetchone()
     if data is None:
         return True
@@ -181,6 +195,7 @@ def createAppointment(patient_id, employee_id, timeFrom, timeTo, conn, c):
     c.execute("INSERT INTO schedules VALUES (?, ?, ?, ?)", (patient_id, employee_id, timeFrom, timeTo))
     conn.commit()
 
+
 def createLogEntry(patient_id, employee_id, timestamp, conn, c):
     '''
     Create an entry in the log
@@ -193,6 +208,8 @@ def createLogEntry(patient_id, employee_id, timestamp, conn, c):
     '''
     c.execute("INSERT INTO entries VALUES (?, ?, ?)", (patient_id, employee_id, timestamp))
     conn.commit()
+
+
 
 
 def printLogEntry(color):
