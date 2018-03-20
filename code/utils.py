@@ -6,7 +6,7 @@ def initializeDatabase():
     '''
     return 0
 
-def createPatient(patient_id, name, journal_id, c):
+def createPatient(patient_id, name, journal_id, conn,  c):
     '''
     Create a patient with a journal (use help-function)
         Input:
@@ -19,7 +19,7 @@ def createPatient(patient_id, name, journal_id, c):
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
     conn.commit()
 
-def createEmployee(employee_id, c):
+def createEmployee(employee_id, conn, c):
     '''
     Create a employee
         Input:
@@ -29,7 +29,7 @@ def createEmployee(employee_id, c):
     c.execute("INSERT INTO employees VALUES (?)", (employee_id))
     conn.commit()
 
-def deletePatient(patient_id, c):
+def deletePatient(patient_id, conn, c):
     '''
     Delete an appointment from the schedule
         Input:
@@ -39,7 +39,7 @@ def deletePatient(patient_id, c):
     conn.commit()
 
 
-def deleteEmployee(employee_id, c):
+def deleteEmployee(employee_id, conn, c):
     '''
     Delete an employee the schema
         Input:
@@ -49,7 +49,7 @@ def deleteEmployee(employee_id, c):
     c.execute("DELETE employees WHERE employee_id=?", (employee_id))
     conn.commit()
 
-def deleteAppointment(journal_id, c):
+def deleteAppointment(appointment_id, conn, c):
     '''
     Delete an appointment from the schedule
         Input:
@@ -58,10 +58,10 @@ def deleteAppointment(journal_id, c):
             Boolean -> If it was done or not (need an exception)
     '''
 
-    c.execute("DELETE schedules WHERE journal_id=?", (journal_id))
+    c.execute("DELETE schedules WHERE id=?", (appointment_id))
     conn.commit()
 
-def createEntry(patient_id, employee_id, timeFrom, timeTo):
+def createEntry(patient_id, employee_id, timeFrom, timeTo, conn, c):
     '''
     Create an entry in the schedule
         Input:
@@ -71,9 +71,8 @@ def createEntry(patient_id, employee_id, timeFrom, timeTo):
             An entry in the schedule containing a @patient_id, @employee_id, a time from and a time to
     '''
 
-    c.execute("INSERT INTO schedules VALUES (?, ?)", (patient_id, employee_id))
+    c.execute("INSERT INTO schedules VALUES (?, ?, ?, ?)", (patient_id, employee_id, timeFrom, timeTo))
     conn.commit()
-    print "lol"
 
     return 0
 
