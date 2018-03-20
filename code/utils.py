@@ -7,12 +7,31 @@ def initializeDatabase():
     '''
     return 0
 
-def fillWithFakeData():
+
+def fillJournAlert(patient_number, schedule_number, employee_number):
     '''
-    Fills the database with fake data
+    Fills the log databse with fake data (only have to do this once)
         Input:
+            @conn: a connection to the JournAlert database
+            @patient_number: number of patients to add (has to be equal to number of journals)
+            @schedule_number: number of appointments to create (less than patients)
+            @employee_number: number of employees to create (less than patients)
+    '''
+
+
+def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
+    '''
+    NB! HAS TO BE CALLED AFTER journalert.db IS FILLED
+    Fills the log databse with fake data (only have to do this once)
+        Input:
+            @entries: how many entries in the log that is to be created
+            @green_percentage: percentage of green entries
+            @orange_percentage: percentage of orange entries
+            @red_percentage: percentage of red entries
 
     '''
+
+
 def createPatient():
     '''
     Create a patient with a journal (use help-function)
@@ -22,6 +41,8 @@ def createPatient():
             @journal_id
 
     '''
+
+
     return 0
 
 def createEmployee():
