@@ -1,10 +1,5 @@
 import sqlite3
 
-# conn = sqlite3.connect('journalert.db')
-# c = conn.cursor()
-
-
-
 def initializeDatabase(c):
     '''
     Initialization of the database (only have to do this once)
@@ -29,7 +24,6 @@ def initializeDatabase(c):
     c_log = conn_log.cursor()
 
     c_log.execute("""CREATE TABLE entries(patient_id, employee_id, timestamp)""")
-
 
     return 0
 
@@ -56,6 +50,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
             @red_percentage: percentage of red entries
 
     '''
+
 
 
 def createPatient():
