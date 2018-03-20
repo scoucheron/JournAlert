@@ -1,4 +1,7 @@
 from utils import *
+import sqlite3
+
+conn = sqlite3.connect('journalert.db')
 
 def fetchJournal(patient_id, employee_id):
     return 0
