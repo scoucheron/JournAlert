@@ -12,13 +12,6 @@ def fetchJournal(patient_id, employee_id):
 			A journal from a patient (fetches the ID)
 	'''
 
-
-
-
-
-
-
-
     return 0
 
 def logEntry(patient_id, emlpoyee_id):
