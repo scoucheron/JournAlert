@@ -37,19 +37,6 @@ def fetchJournal(patient_id, employee_id):
 
 	return 0
 
-def logEntry(patient_id, emlpoyee_id):
-	'''
-	Write to the log. The log consists of a @patient_id, a @employee_id and a timestamp when it was accessed.
-		Input:
-			@patient_id: the ID of the patient to fetch the journal from
-			@employee_id: The ID for the employee which
-		Output:
-			An entry in the log containing @patient_id, @employee_id and a timestamp
-	'''
-
-	return 0
-
-
 def checkLog():
 	'''
 	Goes through the log and checks if it si a red, orange or green entry.
@@ -62,7 +49,7 @@ def checkLog():
 	'''
 
 	greens 	= 0
-	yellows 	= 0
+	yellows = 0
 	reds 	= 0
 
 	conn = sqlite3.connect('log.db')
