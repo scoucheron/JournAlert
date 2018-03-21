@@ -23,7 +23,7 @@ def initializeDatabase():
     conn_log = sqlite3.connect('log.db')
     c_log = conn_log.cursor()
 
-    c_log.execute("""CREATE TABLE entries(patient_id, employee_id, timestamp)""")
+    c_log.execute("""CREATE TABLE entries(patient_id, employee_id, ts text, warning_level text)""")
 
     #Save the changes
     conn_log.commit()
@@ -157,29 +157,25 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         c.execute('SELECT * FROM schedules')
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
-
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 1)
 
     # Create orange entries
     for x in range(number_orange):
         c.execute('SELECT * FROM schedules')
         # Fetch an entry
-        # Fetch an entry
         all_appoint = c.fetchmany(number_green)
-
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 2)
 
     # Create red entries
     for x in range(number_red):
         c.execute('SELECT patient_id FROM patients WHERE NOT EXISTS ( SELECT * FROM schedules)')
         appoint = c.fetchone()
-
         c.execute('SELECT * from employees')
         e_id = c.fetchone()
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(1, 1, '20.03.2018 14:00', conn_log, c_log)
+        createLogEntry(1, 1, '20.03.2018 14:00', conn_log, c_log, 3)
 
 
 def createPatient(patient_id, name, journal_id, conn, c):
@@ -336,7 +332,7 @@ def createAppointment(appointment_id, patient_id, employee_id, timeFrom, timeTo,
     conn.commit()
 
 
-def createLogEntry(patient_id, employee_id, timestamp, conn, c):
+def createLogEntry(patient_id, employee_id, ts, conn, c, color):
     '''
     Create an entry in the log
         Input:
@@ -348,7 +344,16 @@ def createLogEntry(patient_id, employee_id, timestamp, conn, c):
         Output:
             An entry in the log containing @patient_id, @employee_id, @timestamp
     '''
-    c.execute("INSERT INTO entries VALUES (?, ?, ?)", (patient_id, employee_id, timestamp))
+    if(color == 1):
+        warning_level = ('GREEN',)
+    elif(color == 2):
+        warning_level = ('YELLOW',)
+    elif(color == 3):
+        warning_level = ('RED',)
+    else:
+        sys.exit("Input color was wrong. (Has to be green [1], orange [2] or red [3]")
+
+    c.execute("INSERT INTO entries VALUES (?, ?, ?, ?)", (patient_id, employee_id, ts, warning_level[0]))
     conn.commit()
 
 
@@ -368,7 +373,7 @@ def printLogEntry(color):
     if(color == 1):
         symbol = ('GREEN',)
     elif(color == 2):
-        symbol = ('ORANGE',)
+        symbol = ('YELLOW',)
     elif(color == 3):
         symbol = ('RED',)
     else:
