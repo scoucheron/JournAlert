@@ -2,6 +2,7 @@ import sqlite3
 import sys
 import os
 import random
+import datetime
 
 def initializeDatabase():
     '''
@@ -23,7 +24,7 @@ def initializeDatabase():
     conn_log = sqlite3.connect('log.db')
     c_log = conn_log.cursor()
 
-    c_log.execute("""CREATE TABLE entries(patient_id, employee_id, ts text, warning_level text)""")
+    c_log.execute("""CREATE TABLE entries(patient_id, employee_id, ts timestamp, warning_level text)""")
 
     #Save the changes
     conn_log.commit()
@@ -46,10 +47,8 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
             @employee_number: number of employees to create (less than patients)
     '''
 
-
     conn = sqlite3.connect('journalert.db')
     c = conn.cursor()
-
 
     for i in range(patient_number):
         createPatient(i, str(i), i, conn, c)
@@ -57,12 +56,12 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
     for i in range(employee_number):
         createEmployee(i, conn, c)
 
-    year        = "2018"
-    month       = "5"
-    day         = "1"
-    hourFrom    = "00"
-    minFrom     = "00"
-    minTo       = "00"
+    year        = 2018
+    month       = 5
+    day         = 1
+    hourFrom    = 00
+    minFrom     = 00
+    minTo       = 00
 
     # TO DO: make employees that haas no appointments
     for i in range(schedule_number):
@@ -72,50 +71,38 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
         employee = random.randint(0, employee_number-1)
 
         # new day
-        if int(hourFrom) == 23:
-            minTo = "59"
+        if hourFrom == 23:
+            minTo = 59
             hourTo = hourFrom
         else:
-            hourTo = str(int(hourFrom)+1)
+            hourTo = hourFrom+1
 
-        if int(hourFrom) <= 9 and hourFrom != "00": x = "0"
-        else: x = ""
+        start = datetime.datetime(year, month, day, hourFrom, minFrom)
+        end = datetime.datetime(year, month, day, hourTo, minTo)
 
-        if int(hourTo) <= 9: y = "0"
-        else: y = ""
-
-        if int(month) <= 9: z = "0"
-        else: y = ""
-
-        if int(day) <= 9: k = "0"
-        else: k = ""
-
-        date        = k + day + "." + z + month + "." + year + " "
-        timeFrom    = x + str(hourFrom) + ":" + str(minFrom)
-        timeTo      = y + str(hourTo) + ":" + str(minTo)
-
-        createAppointment(i, patient, employee, date+timeFrom, date+timeTo, conn, c)
+        createAppointment(i, patient, employee, start, end, conn, c)
 
         # Move time to next appointment
         # Assume 28 days in every month
 
         # New day
-        if int(hourFrom) == 23:
-            hourFrom = "00"
-            minTo = "00"
-            day = str(int(day)+1)
+        if hourFrom == 23:
+            hourFrom = 00
+            minTo = 00
+            day = day+1
 
             # New month
-            if int(day) == 28:
-                day = "1"
-                month = str(int(month)+1)
+            if day == 28:
+                day = 1
+                month = month+1
             # New year
-            if month == "12":
-                month = "1"
-                year = str(int(year)+1)
+            if month == 12:
+                month = 1
+                year = year+1
 
         else:
-            hourFrom = str(int(hourFrom) + 1)
+            hourFrom = hourFrom + 1
+
 
 
 
@@ -158,7 +145,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 0)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
 
     # Create orange entries
     for x in range(number_orange):
@@ -166,7 +153,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 0)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
 
     # Create red entries
     for x in range(number_red):
@@ -175,7 +162,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         c.execute('SELECT * from employees')
         e_id = c.fetchone()
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(1, 1, '20.03.2018 14:00', conn_log, c_log, 0)
+        createLogEntry(1, 1, '2018-03-20 14:00:00', conn_log, c_log, 4)
 
 
 def createPatient(patient_id, name, journal_id, conn, c):
@@ -190,15 +177,43 @@ def createPatient(patient_id, name, journal_id, conn, c):
         Output:
             Boolean -> successfull or not successfull
     '''
-
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
     conn.commit()
+    createJournal(patient_id, conn, c)
+
+
+    ''' asserting that the entry has been created '''
     c.execute("SELECT * FROM patients WHERE patient_id = ?", (patient_id,))
     data = c.fetchone()
     if data is None:
         return False
     else:
         return True
+
+
+
+def createJournal(patient_id, conn, c):
+    '''
+    Creates a journal entry for a patient
+        Input:
+            @patient_id
+            @conn (Connection)
+            @c    (Cursor)
+        Output:
+            Boolean -> successfull or not successfull
+    '''
+    c.execute("INSERT INTO journals VALUES (?)", (patient_id,))
+    conn.commit()
+
+    ''' asserting that the entry has been created '''
+    c.execute("SELECT * FROM journals WHERE patient_id = ?", (patient_id,))
+    data = c.fetchone()
+    if data is None:
+        return False
+    else:
+        return True
+
+
 
 def createEmployee(employee_id, conn, c):
     '''
@@ -214,6 +229,7 @@ def createEmployee(employee_id, conn, c):
     c.execute("INSERT INTO employees VALUES (?)", (employee_id,))
     conn.commit()
 
+    ''' asserting that the entry has been created '''
     c.execute("SELECT id FROM employees WHERE id = ?", (employee_id,))
     data = c.fetchone()
     if data is None:
@@ -317,16 +333,16 @@ def createLogEntry(patient_id, employee_id, ts, conn, c, color):
         Output:
             An entry in the log containing @patient_id, @employee_id, @timestamp
     '''
-    if(color == 0):
-        warning_level = ('BLACK',)
-    elif(color == 1):
+    if(color == 1):
         warning_level = ('GREEN',)
     elif(color == 2):
         warning_level = ('YELLOW',)
     elif(color == 3):
         warning_level = ('RED',)
+    elif(color == 4):
+        warning_level = ('BLACK',)
     else:
-        sys.exit("Input color was wrong. (Has to be green [1], orange [2] or red [3]")
+        sys.exit("Input color was wrong. (Has to be green [1], orange [2], red [3] or black [4]")
 
     c.execute("INSERT INTO entries VALUES (?, ?, ?, ?)", (patient_id, employee_id, ts, warning_level[0]))
     conn.commit()
@@ -346,16 +362,16 @@ def printLogEntry(color):
     '''
 
     # Make sure the color is correct and that there will be no errors
-    if(color == 0):
-        symbol = ('BLACK',)
-    elif(color == 1):
+    if(color == 1):
         symbol = ('GREEN',)
     elif(color == 2):
         symbol = ('YELLOW',)
     elif(color == 3):
         symbol = ('RED',)
+    elif(color == 4):
+        symbol = ('BLACK',)
     else:
-        sys.exit("Input color was wrong. (Has to be green [1], orange [2] or red [3]")
+        sys.exit("Input color was wrong. (Has to be green [1], orange [2], red [3] or black [4]")
 
     # Create a connection to the log database
     conn = sqlite3.connect('log.db')

@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timedelta
 import time
 
+
 def fetchJournal(patient_id, employee_id):
 	'''
 	Fetches the journal for a given patient. Only allowed if the given employee_id is an actual employee.
@@ -13,19 +14,30 @@ def fetchJournal(patient_id, employee_id):
 		Output:
 			A journal from a patient (fetches the ID)
 	'''
+	conn = sqlite3.connect('journalert.db')
+	c = conn.cursor()
+
+	conn2 = sqlite3.connect('log.db')
+	c2 = conn2.cursor()
+
+
+	c.execute('SELECT * FROM employees WHERE id = ?', (employee_id,))
+	data = c.fetchone()
+
+	if data is None:
+		print ("not a valid employee")
+		return False
+
+	c.execute('SELECT * from journals WHERE patient_id = ?', (patient_id,))
+
+	time_now = datetime.datetime.now().replace(microsecond=0)
+	createLogEntry(patient_id, employee_id, time_now, conn2, c2, 4)
+
+	print ("log entry created")
+
+
 	return 0
 
-def logEntry(patient_id, emlpoyee_id):
-	'''
-	Write to the log. The log consists of a @patient_id, a @employee_id and a timestamp when it was accessed.
-		Input:
-			@patient_id: the ID of the patient to fetch the journal from
-			@employee_id: The ID for the employee which
-		Output:
-			An entry in the log containing @patient_id, @employee_id and a timestamp
-	'''
-
-	return 0
 
 
 def checkLog(delta):
@@ -45,69 +57,110 @@ def checkLog(delta):
 	c_log = conn_log.cursor()
 	conn = sqlite3.connect('journalert.db')
 	c = conn.cursor()
-
 	count = 0
-	no_schedules = 0;
 	for row in c_log.execute("SELECT * from entries WHERE warning_level='%s'" % 'BLACK'):
+		assign_colour = ""
+		no_schedules = 0;
 		entryTime = row[2]
 		patient_id = row[0]
 		employee_id = row[1]
-		print(entryTime + ":00")
-		entry_datetime = time.strptime(entryTime, "%d.%m.%Y %H:%M")
-		# print(entry_datetime)
-		# entry_datetime.tm_hour =  12
-		# print(deltaFrom)
-		# deltaTo = 0
-		print("NOW:",datetime.now() + timedelta(hours = 2))
-
-		# print(entry_datetime + timedelta(hours=2))
+		entry_datetime = datetime.strptime(entryTime, "%Y-%m-%d %H:%M:%S")
 
 		for row in c.execute("SELECT * FROM schedules WHERE patient_id = ? AND employee_id = ?", (patient_id,employee_id)):
 			no_schedules = 1
 			timeFrom = row[3]
 			timeTo = row[4]
 
-			appointment_datetime_from = time.strptime(timeFrom, "%d.%m.%Y %H:%M")
-			appointment_datetime_to = time.strptime(timeTo, "%d.%m.%Y %H:%M")
+			time = timeFrom.split(' ')[1]
+			date = timeFrom.split(' ')[0]
 
-			if entry_datetime >= appointment_datetime_from and entry_datetime <= appointment_datetime_to:
-				 # It's GREEN!
-				 print("GREEN")
 
-			# if entry_datetime >= (appointment_datetime_from + delta) and entry_datetime <= (appointment_datetime_to + delta):
-			# 	# it's YELLOW
-			# 	print("YELLOw")
+			appointment_datetime_from = datetime.strptime(timeFrom, "%Y-%m-%d %H:%M:%S")
+			appointment_datetime_to = datetime.strptime(timeTo, "%Y-%m-%d %H:%M:%S")
 
-		if(no_schedules == 1):
-			# No existing schedule
+			if entry_datetime >= (appointment_datetime_from - timedelta(hours=delta)) and entry_datetime <= (appointment_datetime_to + timedelta(hours=delta)):
+				assign_colour = "GREEN"
+
+			else:
+				assign_colour = "YELLOW"
+
+
+		if(no_schedules == 0):
+			# No existing schedule --> no relation between employee and patient in schedule
 			# It's RED!
-			print("RED")
+			assign_colour = "RED"
+
+		c_log.execute("UPDATE entries SET warning_level = ? WHERE patient_id = ? and employee_id = ? AND ts = ?", (assign_colour, patient_id, employee_id, entryTime))
+
+	conn_log.commit()
+	conn_log.close()
+
+def printWarningLevels():
+
+	greens = 0
+	yellows = 0
+	reds = 0
+	blacks = 0
+
+	conn = sqlite3.connect('log.db')
+	c = conn.cursor()
+
+	c.execute("SELECT * FROM entries")
+
+	entries = c.fetchall()
+
+	for i in entries:
+		if(i[3] == "RED"):
+			reds = reds + 1
+		elif(i[3] == "YELLOW"):
+			yellows = yellows + 1
+		elif(i[3] == "GREEN"):
+			greens = greens + 1
+		elif(i[3] == "BLACK"):
+			blacks = blacks + 1
 
 
+	print("GREEN:	", greens)
+	print("YELLOW:	", yellows)
+	print("REDS:	", reds)
+	print("BLACKS:	", blacks)
 
-
-
-
-
-def returnAccessed(patient_id):
+	conn.commit()
+	conn.close()
+def returnAccessed(patient_id, start_date, end_date=datetime.now().replace(microsecond=0)):
 	'''
 	Fetches a patients accessed journal and who has accessed them
 		Input:
 			@patient_id: the ID of a patient
+			@start_date: Check accesses back to this date
+			@end_date: Check accesses up to this date
 		Output:
 			Every access of the journal and who accessed it
 	'''
+	conn = sqlite3.connect('log.db')
+	c = conn.cursor()
 
-	return 0
+
+	c.execute("SELECT * FROM entries WHERE patient_id = ? AND ts BETWEEN ? AND ?", (patient_id, start_date, end_date))
+	accesses = c.fetchall()
+
+	return accesses
 
 
 def main():
-	# os.remove('journalert.db')
-	# os.remove('log.db')
-	# initializeDatabase()
-	# fillJournAlert(500, 200, 300)
-	# fillLog(100, 90, 5, 5)
+	os.remove('journalert.db')
+	os.remove('log.db')
+	initializeDatabase()
+	fillJournAlert(500, 200, 300)
+	fillLog(100, 90, 5, 5)
+
+	start = '2018-05-03'
+	stop = '2018-05-03 17:00:00'
+	patient = 299
+	accesses = returnAccessed(patient, start, stop)
 	checkLog(24)
+	time.sleep(5)
+	printWarningLevels()
 
 
 if __name__ == '__main__':
