@@ -37,6 +37,8 @@ def fetchJournal(patient_id, employee_id):
 
 	return 0
 
+
+
 def checkLog():
 	'''
 	Goes through the log and checks if it si a red, orange or green entry.
@@ -49,7 +51,7 @@ def checkLog():
 	'''
 
 	greens 	= 0
-	yellows = 0
+	yellows 	= 0
 	reds 	= 0
 
 	conn = sqlite3.connect('log.db')
@@ -82,6 +84,7 @@ def returnAccessed(patient_id, start_date, end_date=datetime.datetime.now().repl
 	conn = sqlite3.connect('log.db')
 	c = conn.cursor()
 
+
 	c.execute("SELECT * FROM entries WHERE patient_id = ? AND ts BETWEEN ? AND ?", (patient_id, start_date, end_date))
 	accesses = c.fetchall()
 
@@ -105,10 +108,4 @@ def main():
 
 
 if __name__ == '__main__':
-	# Find the wanted size of the cluster as a command line argument
-	try:
-		num_client = int(sys.argv[1])
-	except:
-		sys.exit("The arguments are as follows (both as given as integers): \n \t size: the size of the paxos cluster \n \t treshold: upper threshold of concurrent clients\n\n  Example: ./env 3 4 \t will run the evaluation with a cluster size of 3 and threshold 4")
-
-	main(num_client)
+	main()
