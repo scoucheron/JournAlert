@@ -38,6 +38,24 @@ def checkLog():
 		Prints the number of green, orange and red entries
 	'''
 
+	greens 	= 0
+	yellows 	= 0
+	reds 	= 0
+
+	conn = sqlite3.connect('log.db')
+	c = conn.cursor()
+
+	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "GREEN"):
+		greens = greens + 1
+	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "YELLOW"):
+		yellows = yellows + 1
+	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "RED"):
+		reds = reds + 1
+
+
+	print("GREEN: ", greens)
+	print("YELLOW: ", yellows)
+	print("RED: ", reds)
 	return 0
 
 
@@ -60,6 +78,7 @@ def main():
 	fillJournAlert(500, 200, 300)
 	fillLog(100, 90, 5, 5)
 
+	checkLog()
 
 
 if __name__ == '__main__':

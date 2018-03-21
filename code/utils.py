@@ -23,7 +23,7 @@ def initializeDatabase():
     conn_log = sqlite3.connect('log.db')
     c_log = conn_log.cursor()
 
-    c_log.execute("""CREATE TABLE entries(patient_id, employee_id, timestamp, warning_level integer)""")
+    c_log.execute("""CREATE TABLE entries(patient_id, employee_id, ts text, warning_level text)""")
 
     #Save the changes
     conn_log.commit()
@@ -172,7 +172,6 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
     for x in range(number_red):
         c.execute('SELECT patient_id FROM patients WHERE NOT EXISTS ( SELECT * FROM schedules)')
         appoint = c.fetchone()
-
         c.execute('SELECT * from employees')
         e_id = c.fetchone()
         # Create an entry in the log with the correct time of checking the journal
@@ -306,7 +305,7 @@ def createAppointment(appointment_id, patient_id, employee_id, timeFrom, timeTo,
     conn.commit()
 
 
-def createLogEntry(patient_id, employee_id, timestamp, conn, c, color):
+def createLogEntry(patient_id, employee_id, ts, conn, c, color):
     '''
     Create an entry in the log
         Input:
@@ -319,15 +318,15 @@ def createLogEntry(patient_id, employee_id, timestamp, conn, c, color):
             An entry in the log containing @patient_id, @employee_id, @timestamp
     '''
     if(color == 1):
-        symbol = ('GREEN',)
+        warning_level = ('GREEN',)
     elif(color == 2):
-        symbol = ('ORANGE',)
+        warning_level = ('YELLOW',)
     elif(color == 3):
-        symbol = ('RED',)
+        warning_level = ('RED',)
     else:
         sys.exit("Input color was wrong. (Has to be green [1], orange [2] or red [3]")
 
-    c.execute("INSERT INTO entries VALUES (?, ?, ?)", (patient_id, employee_id, timestamp, symbol))
+    c.execute("INSERT INTO entries VALUES (?, ?, ?, ?)", (patient_id, employee_id, ts, warning_level[0]))
     conn.commit()
 
 
@@ -347,7 +346,7 @@ def printLogEntry(color):
     if(color == 1):
         symbol = ('GREEN',)
     elif(color == 2):
-        symbol = ('ORANGE',)
+        symbol = ('YELLOW',)
     elif(color == 3):
         symbol = ('RED',)
     else:
