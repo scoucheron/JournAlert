@@ -6,3 +6,7 @@
 *.db
 /code/*.db
 /code/.db
+.db-journal
+*.db-journal
+/code/*.db-journal
+/code/.db-journal
