@@ -1,24 +1,23 @@
 import sqlite3
 import sys
+import os
+import random
 
-def initializeDatabase(c):
+def initializeDatabase():
     '''
     Initialization of the database (only have to do this once)
         ### ADD SCHEMA DESCRIPTION
     '''
+    conn = sqlite3.connect('journalert.db')
+    c = conn.cursor()
 
-    c.execute("""CREATE TABLE patients(id integer PRIMARY KEY, name text, journal text)""")
+    c.execute("""CREATE TABLE patients(patient_id integer PRIMARY KEY, name text, journal_id integer, FOREIGN KEY(journal_id) REFERENCES journal(patient_id))""")
     c.execute("""CREATE TABLE employees(id integer PRIMARY KEY)""")
-    c.execute("""CREATE TABLE schedule(id integer PRIMARY KEY, patient_id integer, employee_id integer, date text, timeFrom text, timeTo text,
-                FOREIGN KEY(patient_id) REFERENCES patient(id)),
-                FOREIGN KEY(emplyee_id) REFERENCES employee(id)""")
-    c.execute("""CREATE TABLE journals(patient_id integer,
-                FOREIGN KEY(patient_id) REFERENCES patient(id))""")
-    # Save the changes
-    c.commit()
+    c.execute("""CREATE TABLE schedules(id integer PRIMARY KEY, patient_id integer, employee_id integer, timeFrom text, timeTo text, FOREIGN KEY(patient_id) REFERENCES patients(id), FOREIGN KEY(employee_id) REFERENCES employee(id))""")
+    c.execute("""CREATE TABLE journals(patient_id integer PRIMARY KEY , FOREIGN KEY(patient_id) REFERENCES patients(id))""")
 
-    #Close the connection
-    c.close()
+    # Save the changes
+    conn.commit()
 
     #Database for the logEntry
     conn_log = sqlite3.connect('log.db')
@@ -27,10 +26,11 @@ def initializeDatabase(c):
     c_log.execute("""CREATE TABLE entries(patient_id, employee_id, timestamp)""")
 
     #Save the changes
-    c_log.commit()
+    conn_log.commit()
 
     #Close the connection
-    conn_log.close()
+    c_log.close()
+    c.close()
     return 0
 
 
@@ -52,14 +52,14 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
 
 
     for i in range(patient_number):
-        createPatient(i, c)
+        createPatient(i, str(i), i, conn, c)
 
     for i in range(employee_number):
-        createPatient(i,c)
+        createEmployee(i, conn, c)
 
     year        = "2018"
-    month       = "05"
-    day         = "01"
+    month       = "5"
+    day         = "1"
     hourFrom    = "00"
     minFrom     = "00"
     minTo       = "00"
@@ -94,7 +94,7 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
         timeFrom    = x + str(hourFrom) + ":" + str(minFrom)
         timeTo      = y + str(hourTo) + ":" + str(minTo)
 
-        createAppointment(patient, employee, date+timeFrom, date+timeTo)
+        createAppointment(i, patient, employee, date+timeFrom, date+timeTo, conn, c)
 
         # Move time to next appointment
         # Assume 28 days in every month
@@ -141,46 +141,45 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
     if(total_percentage != 100):
         sys.exit("The given percentages did not add up to 100")
 
-    number_green = entry_number * (green_percentage/100)
-    number_orange = entry_number * (orange_percentage/100)
-    number_red = entry_number * (red_percentage/100)
+    number_green = int(entry_number * (green_percentage/100))
+    number_orange = int(entry_number * (orange_percentage/100))
+    number_red = int(entry_number * (red_percentage/100))
 
-
-    # Open a connection to the log
     conn_log = sqlite3.connect('log.db')
     c_log = conn_log.cursor()
 
     # Open a connection to the JournAlert database
-    conn = sqlite3('journalert.db')
-    c = c.cursor()
+    conn = sqlite3.connect('journalert.db')
+    c = conn.cursor()
 
     # Create green entries
     for x in range(number_green):
-        c.execute('SELECT * FROM schedule')
+        c.execute('SELECT * FROM schedules')
         # Fetch an entry
-        appoint = c.fetchone()
+        all_appoint = c.fetchmany(number_green)
 
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(appoint[2], appoint[3], appoint[4], conn_log, c_log)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log)
 
     # Create orange entries
     for x in range(number_orange):
-        c.execute('SELECT * FROM schedule')
+        c.execute('SELECT * FROM schedules')
         # Fetch an entry
-        appoint = c.fetchone()
+        # Fetch an entry
+        all_appoint = c.fetchmany(number_green)
 
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(appoint[2], appoint[3], appoint[4], conn_log, c_log)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log)
 
     # Create red entries
     for x in range(number_red):
-        c.execute('SELECT patient_id FROM patient WHERE NOT EXISTS ( SELECT  FROM schedule)')
+        c.execute('SELECT patient_id FROM patients WHERE NOT EXISTS ( SELECT * FROM schedules)')
         appoint = c.fetchone()
 
         c.execute('SELECT * from employees')
         e_id = c.fetchone()
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(patient_id, e_id, '20.03.2018 14:00', conn_log, c_log)
+        createLogEntry(1, 1, '20.03.2018 14:00', conn_log, c_log)
 
 
 def createPatient(patient_id, name, journal_id, conn, c):
@@ -198,9 +197,7 @@ def createPatient(patient_id, name, journal_id, conn, c):
 
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
     conn.commit()
-
-    ''' asserting that the entry has been inserted '''
-    c.execute("SELECT id FROM patients WHERE id = ?", (patient_id))
+    c.execute("SELECT * FROM patients WHERE patient_id = ?", (patient_id,))
     data = c.fetchone()
     if data is None:
         return False
@@ -218,11 +215,10 @@ def createEmployee(employee_id, conn, c):
             Boolean -> successfull or not successfull
     '''
 
-    c.execute("INSERT INTO employees VALUES (?)", (employee_id))
+    c.execute("INSERT INTO employees VALUES (?)", (employee_id,))
     conn.commit()
 
-    ''' asserting that the entry has been inserted '''
-    c.execute("SELECT id FROM employees WHERE id = ?", (employee_id))
+    c.execute("SELECT id FROM employees WHERE id = ?", (employee_id,))
     data = c.fetchone()
     if data is None:
         return False
@@ -239,11 +235,11 @@ def deletePatient(patient_id, conn, c):
         Output:
             Boolean -> successfull or not successfull
     '''
-    c.execute("DELETE patients WHERE id=?", (patient_id))
+    c.execute("DELETE patients WHERE patient_id=?", (patient_id))
     conn.commit()
 
-    ''' asserting that the entry has been deleted '''
-    c.execute("SELECT id FROM patients WHERE id = ?", (patient_id))
+    ''' asserting that the row has been deleted '''
+    c.execute("SELECT * FROM patients WHERE patient_id = ?", (patient_id,))
     data = c.fetchone()
     if data is None:
         return True
@@ -295,7 +291,7 @@ def deleteAppointment(appointment_id, conn, c):
     else:
         return False
 
-def createAppointment(patient_id, employee_id, timeFrom, timeTo, conn, c):
+def createAppointment(appointment_id, patient_id, employee_id, timeFrom, timeTo, conn, c):
     '''
     Create an entry in the schedule
         Input:
@@ -309,7 +305,7 @@ def createAppointment(patient_id, employee_id, timeFrom, timeTo, conn, c):
             An entry in the schedule containing a @patient_id, @employee_id, a time from and a time to
     '''
 
-    c.execute("INSERT INTO schedules VALUES (?, ?, ?, ?)", (patient_id, employee_id, timeFrom, timeTo))
+    c.execute("INSERT INTO schedules VALUES (?, ?, ?, ?, ?)", (appointment_id ,patient_id, employee_id, timeFrom, timeTo))
     conn.commit()
 
 
@@ -353,11 +349,11 @@ def printLogEntry(color):
 
     # Create a connection to the log database
     conn = sqlite3.connect('log.db')
-    c. = conn.cursor()
+    c = conn.cursor()
 
     # Fetch all entries in the log with a given warning level (gree,orange,red) and print them
     print(x.fetchall())
-    for row in c.execute('SELECT * FROM entries WHERE warning_level=?', symbol)
+    for row in c.execute('SELECT * FROM entries WHERE warning_level=?', symbol):
         print(row)
 
     # Close the connection
