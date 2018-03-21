@@ -34,6 +34,8 @@ def initializeDatabase():
     return 0
 
 
+
+
 def fillJournAlert(patient_number, schedule_number, employee_number):
     '''
     Fills the log databse with fake data (only have to do this once)
@@ -187,8 +189,12 @@ def createPatient(patient_id, name, journal_id, conn, c):
             @patient_id
             @name
             @journal_id
-
+            @conn (Connection)
+            @c    (Cursor)
+        Output:
+            Boolean -> successfull or not successfull
     '''
+
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
     conn.commit()
     c.execute("SELECT * FROM patients WHERE patient_id = ?", (patient_id,))
@@ -203,6 +209,10 @@ def createEmployee(employee_id, conn, c):
     Create a employee
         Input:
             @employee_id
+            @conn (Connection)
+            @c    (Cursor)
+        Output:
+            Boolean -> successfull or not successfull
     '''
 
     c.execute("INSERT INTO employees VALUES (?)", (employee_id,))
@@ -220,6 +230,10 @@ def deletePatient(patient_id, conn, c):
     Delete an appointment from the schedule
         Input:
             @patient_id
+            @conn (Connection)
+            @c    (Cursor)
+        Output:
+            Boolean -> successfull or not successfull
     '''
     c.execute("DELETE patients WHERE patient_id=?", (patient_id))
     conn.commit()
@@ -237,12 +251,16 @@ def deleteEmployee(employee_id, conn, c):
     Delete an employee the schema
         Input:
             @employee_id
+            @conn (Connection)
+            @c    (Cursor)
+        Output:
+            Boolean -> successfull or not successfull
     '''
 
     c.execute("DELETE employees WHERE id=?", (employee_id))
     conn.commit()
 
-    ''' asserting that the row has been deleted '''
+    ''' asserting that the entry has been deleted '''
     c.execute("SELECT id FROM employees WHERE id = ?", (employee_id))
     data = c.fetchone()
     if data is None:
@@ -256,12 +274,22 @@ def deleteAppointment(appointment_id, conn, c):
     Delete an appointment from the schedule
         Input:
             @journal_id
+            @conn (Connection)
+            @c    (Cursor)
         Output:
-            Boolean -> If it was done or not (need an exception)
+            Boolean -> successfull or not successfull
     '''
 
     c.execute("DELETE schedules WHERE id=?", (appointment_id))
     conn.commit()
+
+    ''' asserting that the entry has been deleted '''
+    c.execute("SELECT id FROM schedules WHERE id = ?", (appointment_id))
+    data = c.fetchone()
+    if data is None:
+        return True
+    else:
+        return False
 
 def createAppointment(appointment_id, patient_id, employee_id, timeFrom, timeTo, conn, c):
     '''
@@ -269,6 +297,10 @@ def createAppointment(appointment_id, patient_id, employee_id, timeFrom, timeTo,
         Input:
             @patient_id: the ID of the patient to fetch the journal from
             @employee_id: The ID for the employee
+            @timeFrom
+            @timeTo
+            @conn (Connection)
+            @c    (Cursor)
         Output:
             An entry in the schedule containing a @patient_id, @employee_id, a time from and a time to
     '''
@@ -284,6 +316,8 @@ def createLogEntry(patient_id, employee_id, timestamp, conn, c):
             @patient_id: the ID of the patient to fetch the journal from
             @employee_id: The ID for the employee
             @timestamp:  Date and time
+            @conn (Connection)
+            @c    (Cursor)
         Output:
             An entry in the log containing @patient_id, @employee_id, @timestamp
     '''
