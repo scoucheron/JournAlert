@@ -1,7 +1,6 @@
 from utils import *
 import os
-
-
+import multiprocessing
 
 def fetchJournal(patient_id, employee_id):
 	'''
@@ -24,16 +23,13 @@ def fetchJournal(patient_id, employee_id):
 	data = c.fetchone()
 
 	if data is None:
-		print ("not a valid employee")
+		print ("Not a valid employee")
 		return False
 
 	c.execute('SELECT * from journals WHERE patient_id = ?', (patient_id,))
 
 	time_now = datetime.datetime.now().replace(microsecond=0)
 	createLogEntry(patient_id, employee_id, time_now, conn2, c2, 4)
-
-	print ("log entry created")
-
 
 	return 0
 
@@ -44,8 +40,8 @@ def checkLog():
 	An orange entry: the journal was accessed, but not within the scheduled time (Something might be wrong)
 	A red entry: The journal was accessed when there was no relation between the patient and employee (Something was wrong)
 
-	Output:
-		Prints the number of green, orange and red entries
+		Output:
+			Prints the number of green, orange and red entries
 	'''
 
 	greens 	= 0
@@ -88,20 +84,21 @@ def returnAccessed(patient_id, start_date, end_date=datetime.datetime.now().repl
 	return accesses
 
 
-def main():
+def main(num_client):
 	# os.remove('journalert.db')
 	# os.remove('log.db')
-	# initializeDatabase()
-	# fillJournAlert(500, 200, 300)
-	# fillLog(100, 90, 5, 5)
-	#
-	# start = '2018-05-03'
-	# stop = '2018-05-03 17:00:00'
-	# patient = 299
-	# accesses = returnAccessed(patient, start, stop)
-	# print (accesses)
 
-	checkLog()
+	number_request = num_client * 100
+
+	random_ids = []
+
+	for x in range(number_request):
+		tup = (random.randint(1,1000), random.randint(1,1000))
+		random_ids.append(tup)
+
+	p = multiprocessing.Pool(num_client)
+	p.starmap(fetchJournal, random_ids)
+
 
 
 if __name__ == '__main__':
@@ -109,6 +106,6 @@ if __name__ == '__main__':
 	try:
 		num_client = int(sys.argv[1])
 	except:
-		sys.exit("The arguments are as follows (both as given as integers): \n \t size: the size of the paxos cluster \n \t treshold: upper threshold of concurrent clients\n\n  Example: ./env 3 4 \t will run the evaluation with a cluster size of 3 and threshold 4")
+		sys.exit("Argument is as follows \n \t number of clients \n\t \t \n Usage: python3 main.py 5")
 
 	main(num_client)

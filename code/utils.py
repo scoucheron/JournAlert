@@ -4,7 +4,7 @@ import os
 import random
 import datetime
 
-def initializeDatabase():
+def initializeJournAlertDatabase():
     '''
     Initialization of the database (only have to do this once)
         ### ADD SCHEMA DESCRIPTION
@@ -20,6 +20,10 @@ def initializeDatabase():
     # Save the changes
     conn.commit()
 
+    #Close the connection
+    c.close()
+
+def initializeLogDataBase():
     #Database for the logEntry
     conn_log = sqlite3.connect('log.db')
     c_log = conn_log.cursor()
@@ -28,12 +32,7 @@ def initializeDatabase():
 
     #Save the changes
     conn_log.commit()
-
-    #Close the connection
     c_log.close()
-    c.close()
-    return 0
-
 
 def fillJournAlert(patient_number, schedule_number, employee_number):
     '''
