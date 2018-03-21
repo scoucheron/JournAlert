@@ -12,6 +12,19 @@ def fetchJournal(patient_id, employee_id):
 		Output:
 			A journal from a patient (fetches the ID)
 	'''
+
+	# Find the journal of the given patients
+		# SELECT * FROM journals WHERE patient_id=? (patient_id,)
+
+
+	# Take the time it is fetched
+
+
+	# Write to a log -> HOW TO LOG? Log has: patient_id, journal_id (?), employee_id, timeStamp (Time fetched)
+
+
+	# Returns the journal
+
 	return 0
 
 def logEntry(patient_id, emlpoyee_id):
@@ -52,15 +65,15 @@ def returnAccessed(patient_id):
 
 	return 0
 
-
-def main():
-	os.remove('journalert.db')
-	os.remove('log.db')
-	initializeDatabase()
-	fillJournAlert(500, 200, 300)
-	fillLog(100, 90, 5, 5)
-
+def main(num_client):
+	return 0
 
 
 if __name__ == '__main__':
-	main()
+	# Find the wanted size of the cluster as a command line argument
+	try:
+		num_client = int(sys.argv[1])
+	except:
+		sys.exit("The arguments are as follows (both as given as integers): \n \t size: the size of the paxos cluster \n \t treshold: upper threshold of concurrent clients\n\n  Example: ./env 3 4 \t will run the evaluation with a cluster size of 3 and threshold 4")
+
+	main(num_client)

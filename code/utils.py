@@ -34,8 +34,6 @@ def initializeDatabase():
     return 0
 
 
-
-
 def fillJournAlert(patient_number, schedule_number, employee_number):
     '''
     Fills the log databse with fake data (only have to do this once)
@@ -121,7 +119,7 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
 
 
 
-def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
+def fillLog(entry_number, green_percentage, yellow_percentage, red_percentage):
     '''
     NB! HAS TO BE CALLED AFTER journalert.db IS FILLED
     NB2! percentages has to be 100 in total
@@ -130,19 +128,19 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         Input:
             @entries: how many entries in the log that is to be created
             @green_percentage: percentage of green entries
-            @orange_percentage: percentage of orange entries
+            @yellow_percentage: percentage of yellow entries
             @red_percentage: percentage of red entries
     '''
 
     # Calculate how many of each entry there is
-    total_percentage = green_percentage + orange_percentage + red_percentage
+    total_percentage = green_percentage + yellow_percentage + red_percentage
 
     # Has to be 100% in total
     if(total_percentage != 100):
         sys.exit("The given percentages did not add up to 100")
 
     number_green = int(entry_number * (green_percentage/100))
-    number_orange = int(entry_number * (orange_percentage/100))
+    number_yellow = int(entry_number * (yellow_percentage/100))
     number_red = int(entry_number * (red_percentage/100))
 
     conn_log = sqlite3.connect('log.db')
@@ -161,10 +159,9 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         # Create an entry in the log with the correct time of checking the journal
         createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log)
 
-    # Create orange entries
-    for x in range(number_orange):
+    # Create yellow entries
+    for x in range(number_yellow):
         c.execute('SELECT * FROM schedules')
-        # Fetch an entry
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
 
@@ -333,7 +330,7 @@ def printLogEntry(color):
 
         Colors:
             GREEN == 1
-            ORANGE == 2
+            YELLOW == 2
             RED == 3
     '''
 
@@ -341,18 +338,18 @@ def printLogEntry(color):
     if(color == 1):
         symbol = ('GREEN',)
     elif(color == 2):
-        symbol = ('ORANGE',)
+        symbol = ('YELLOW',)
     elif(color == 3):
         symbol = ('RED',)
     else:
-        sys.exit("Input color was wrong. (Has to be green [1], orange [2] or red [3]")
+        sys.exit("Input color was wrong. (Has to be green [1], yellow [2] or red [3]")
 
     # Create a connection to the log database
     conn = sqlite3.connect('log.db')
     c = conn.cursor()
 
-    # Fetch all entries in the log with a given warning level (gree,orange,red) and print them
-    print(x.fetchall())
+    # Fetch all entries in the log with a given warning level (gree,yellow,red) and print them
+    print(c.fetchall())
     for row in c.execute('SELECT * FROM entries WHERE warning_level=?', symbol):
         print(row)
 
