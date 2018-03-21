@@ -21,13 +21,13 @@ def run_test(num_client):
         pass
 
     # Delete journalert database if it already exists
-    # try:
-    #     os.remove('journalert.db')
-    # except OSError:
-    #     pass
-    #
-    # initializeJournAlertDatabase()
-    # fillJournAlert(5000, 2000, 3000)
+    try:
+        os.remove('journalert.db')
+    except OSError:
+        pass
+
+    initializeJournAlertDatabase()
+    fillJournAlert(500, 200, 300)
 
     # For each client 'step' we spawn a subprocess which will handle it
     for x in range(num_client):

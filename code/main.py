@@ -29,7 +29,7 @@ def fetchJournal(patient_id, employee_id):
 
 	c.execute('SELECT * from journals WHERE patient_id = ?', (patient_id,))
 
-	time_now = datetime.datetime.now().replace(microsecond=0)
+	time_now = datetime.now().replace(microsecond=0)
 	createLogEntry(patient_id, employee_id, time_now, conn2, c2, 4)
 
 	return 0
@@ -123,7 +123,7 @@ def printWarningLevels():
 
 	conn.commit()
 	conn.close()
-	
+
 def returnAccessed(patient_id, start_date, end_date=datetime.now().replace(microsecond=0)):
 	'''
 	Fetches a patients accessed journal and who has accessed them
@@ -153,7 +153,7 @@ def main(num_client):
 	random_ids = []
 
 	for x in range(number_request):
-		tup = (random.randint(1,1000), random.randint(1,1000))
+		tup = (random.randint(1,100), random.randint(1,100))
 		random_ids.append(tup)
 
 	p = multiprocessing.Pool(num_client)
