@@ -56,8 +56,8 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
     for i in range(employee_number):
         createEmployee(i, conn, c)
 
-    year        = 2018
-    month       = 5
+    year        = 2017
+    month       = 1
     day         = 1
     hourFrom    = 00
     minFrom     = 00
@@ -79,7 +79,6 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
 
         start = datetime.datetime(year, month, day, hourFrom, minFrom)
         end = datetime.datetime(year, month, day, hourTo, minTo)
-
         createAppointment(i, patient, employee, start, end, conn, c)
 
         # Move time to next appointment
@@ -230,7 +229,7 @@ def createEmployee(employee_id, conn, c):
     conn.commit()
 
     ''' asserting that the entry has been created '''
-    c.execute("SELECT id FROM employees WHERE id = ?", (employee_id,))
+    c.execute("SELECT * FROM employees WHERE id = ?", (employee_id,))
     data = c.fetchone()
     if data is None:
         return False
@@ -296,7 +295,7 @@ def deleteAppointment(appointment_id, conn, c):
     conn.commit()
 
     ''' asserting that the entry has been deleted '''
-    c.execute("SELECT id FROM schedules WHERE id = ?", (appointment_id))
+    c.execute("SELECT id FROM schedules WHERE id = ?", (appointment_id, ))
     data = c.fetchone()
     if data is None:
         return True
@@ -319,6 +318,14 @@ def createAppointment(appointment_id, patient_id, employee_id, timeFrom, timeTo,
 
     c.execute("INSERT INTO schedules VALUES (?, ?, ?, ?, ?)", (appointment_id ,patient_id, employee_id, timeFrom, timeTo))
     conn.commit()
+
+    ''' asserting that the entry has been created '''
+    c.execute("SELECT id FROM schedules WHERE id = ?", (appointment_id,))
+    data = c.fetchone()
+    if data is None:
+        return False
+    else:
+        return True
 
 
 def createLogEntry(patient_id, employee_id, ts, conn, c, color):
@@ -346,6 +353,14 @@ def createLogEntry(patient_id, employee_id, ts, conn, c, color):
 
     c.execute("INSERT INTO entries VALUES (?, ?, ?, ?)", (patient_id, employee_id, ts, warning_level[0]))
     conn.commit()
+
+    ''' asserting that the entry has been created '''
+    c.execute("SELECT * FROM entries WHERE patient_id = ? AND employee_id = ? AND ts = ?", (patient_id, employee_id, ts))
+    data = c.fetchone()
+    if data is None:
+        return False
+    else:
+        return True
 
 
 def printLogEntry(color):

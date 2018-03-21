@@ -64,7 +64,6 @@ def checkLog():
 	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "RED"):
 		reds = reds + 1
 
-
 	print("GREEN: ", greens)
 	print("YELLOW: ", yellows)
 	print("RED: ", reds)
