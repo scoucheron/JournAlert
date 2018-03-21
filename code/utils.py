@@ -4,7 +4,7 @@ import os
 import random
 import datetime
 
-def initializeDatabase():
+def initializeJournAlertDatabase():
     '''
     Initialization of the database (only have to do this once)
         ### ADD SCHEMA DESCRIPTION
@@ -20,6 +20,10 @@ def initializeDatabase():
     # Save the changes
     conn.commit()
 
+    #Close the connection
+    c.close()
+
+def initializeLogDataBase():
     #Database for the logEntry
     conn_log = sqlite3.connect('log.db')
     c_log = conn_log.cursor()
@@ -28,12 +32,7 @@ def initializeDatabase():
 
     #Save the changes
     conn_log.commit()
-
-    #Close the connection
     c_log.close()
-    c.close()
-    return 0
-
 
 
 
@@ -144,7 +143,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 1)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
 
     # Create orange entries
     for x in range(number_orange):
@@ -152,7 +151,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 2)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
 
     # Create red entries
     for x in range(number_red):
@@ -161,7 +160,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         c.execute('SELECT * from employees')
         e_id = c.fetchone()
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(1, 1, '2018-03-20 14:00:00', conn_log, c_log, 3)
+        createLogEntry(1, 1, '2018-03-20 14:00:00', conn_log, c_log, 4)
 
 
 def createPatient(patient_id, name, journal_id, conn, c):
@@ -373,6 +372,7 @@ def printLogEntry(color):
             GREEN == 1
             ORANGE == 2
             RED == 3
+            BLACK == 0
     '''
 
     # Make sure the color is correct and that there will be no errors
@@ -383,7 +383,7 @@ def printLogEntry(color):
     elif(color == 3):
         symbol = ('RED',)
     elif(color == 4):
-        warning_level = ('BLACK',)
+        symbol = ('BLACK',)
     else:
         sys.exit("Input color was wrong. (Has to be green [1], orange [2], red [3] or black [4]")
 
@@ -392,7 +392,7 @@ def printLogEntry(color):
     c = conn.cursor()
 
     # Fetch all entries in the log with a given warning level (gree,orange,red) and print them
-    print(x.fetchall())
+    print(c.fetchall())
     for row in c.execute('SELECT * FROM entries WHERE warning_level=?', symbol):
         print(row)
 
