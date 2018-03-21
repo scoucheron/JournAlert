@@ -194,15 +194,41 @@ def createPatient(patient_id, name, journal_id, conn, c):
         Output:
             Boolean -> successfull or not successfull
     '''
-
     c.execute("INSERT INTO patients VALUES (?, ?, ?)", (patient_id, name, journal_id))
     conn.commit()
+    createJournal(patient_id, conn, c)
+
+
+    ''' asserting that the entry has been created '''
     c.execute("SELECT * FROM patients WHERE patient_id = ?", (patient_id,))
     data = c.fetchone()
     if data is None:
         return False
     else:
         return True
+
+def createJournal(patient_id, conn, c):
+    '''
+    Creates a journal entry for a patient
+        Input:
+            @patient_id
+            @conn (Connection)
+            @c    (Cursor)
+        Output:
+            Boolean -> successfull or not successfull
+    '''
+    c.execute("INSERT INTO journals VALUES (?)", (patient_id,))
+    conn.commit()
+
+    ''' asserting that the entry has been created '''
+    c.execute("SELECT * FROM journals WHERE patient_id = ?", (patient_id,))
+    data = c.fetchone()
+    if data is None:
+        return False
+    else:
+        return True
+
+
 
 def createEmployee(employee_id, conn, c):
     '''
@@ -218,6 +244,7 @@ def createEmployee(employee_id, conn, c):
     c.execute("INSERT INTO employees VALUES (?)", (employee_id,))
     conn.commit()
 
+    ''' asserting that the entry has been created '''
     c.execute("SELECT id FROM employees WHERE id = ?", (employee_id,))
     data = c.fetchone()
     if data is None:

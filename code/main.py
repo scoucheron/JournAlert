@@ -1,5 +1,6 @@
 from utils import *
 import os
+import datetime
 
 
 def fetchJournal(patient_id, employee_id):
@@ -12,14 +13,7 @@ def fetchJournal(patient_id, employee_id):
 		Output:
 			A journal from a patient (fetches the ID)
 	'''
-<<<<<<< HEAD
-	
-
-
-    return 0
-=======
 	return 0
->>>>>>> 2b476c6772ef307782fe5e64fe901aa085a1eb64
 
 def logEntry(patient_id, emlpoyee_id):
 	'''
@@ -48,25 +42,37 @@ def checkLog():
 	return 0
 
 
-def returnAccessed(patient_id):
+def returnAccessed(patient_id, start_date, end_date=datetime.datetime.now()):
 	'''
 	Fetches a patients accessed journal and who has accessed them
 		Input:
 			@patient_id: the ID of a patient
+			@start_date: Check accesses back to this date
+			@end_date: Check accesses up to this date
 		Output:
 			Every access of the journal and who accessed it
 	'''
+	conn = sqlite3.connect('log.db')
+	c = conn.cursor()
 
-	return 0
+	c.execute("SELECT * FROM entries WHERE patient_id = ? AND timestamp > ? AND timestamp < ?", (patient_id, start_date, end_date))
+	accesses = c.fetchall()
+
+	return accesses
 
 
 def main():
-	os.remove('journalert.db')
-	os.remove('log.db')
-	initializeDatabase()
-	fillJournAlert(500, 200, 300)
-	fillLog(100, 90, 5, 5)
+	# os.remove('journalert.db')
+	# os.remove('log.db')
+	# initializeDatabase()
+	# fillJournAlert(500, 200, 300)
+	# fillLog(100, 90, 5, 5)
 
+	patient = 124
+	date = '02.05.2018 16:00'
+
+	accesses = returnAccessed(patient, date)
+	print (accesses)
 
 
 if __name__ == '__main__':
