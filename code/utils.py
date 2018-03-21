@@ -103,10 +103,6 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
             hourFrom = hourFrom + 1
 
 
-
-
-
-
 def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
     '''
     NB! HAS TO BE CALLED AFTER journalert.db IS FILLED
@@ -139,18 +135,22 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
     c = conn.cursor()
 
     # Create green entries
+    c.execute('SELECT * FROM schedules')
+    # Fetch an entry
+    all_appoint = c.fetchmany(number_green)
+
+    # PATIENT EMPLOYEE TIME (CONN, C) COLOR
+
     for x in range(number_green):
-        c.execute('SELECT * FROM schedules')
-        # Fetch an entry
-        all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
         createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
 
     # Create orange entries
+    c.execute('SELECT * FROM schedules')
+    # Fetch an entry
+    all_appoint = c.fetchmany(number_green)
+
     for x in range(number_orange):
-        c.execute('SELECT * FROM schedules')
-        # Fetch an entry
-        all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
         createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
 
@@ -161,7 +161,8 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         c.execute('SELECT * from employees')
         e_id = c.fetchone()
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(1, 1, '2018-03-20 14:00:00', conn_log, c_log, 4)
+        createEmployee(13337, conn, c)
+        createLogEntry(1, 13337, '2018-03-20 14:00:00', conn_log, c_log, 4)
 
 
 def createPatient(patient_id, name, journal_id, conn, c):

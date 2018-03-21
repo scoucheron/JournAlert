@@ -123,6 +123,7 @@ def printWarningLevels():
 
 	conn.commit()
 	conn.close()
+	return greens, yellows, reds, blacks
 
 def returnAccessed(patient_id, start_date, end_date=datetime.now().replace(microsecond=0)):
 	'''
