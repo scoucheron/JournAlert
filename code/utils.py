@@ -158,7 +158,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 1)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 0)
 
     # Create orange entries
     for x in range(number_orange):
@@ -166,7 +166,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 2)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 0)
 
     # Create red entries
     for x in range(number_red):
@@ -175,7 +175,7 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         c.execute('SELECT * from employees')
         e_id = c.fetchone()
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(1, 1, '20.03.2018 14:00', conn_log, c_log, 3)
+        createLogEntry(1, 1, '20.03.2018 14:00', conn_log, c_log, 0)
 
 
 def createPatient(patient_id, name, journal_id, conn, c):
@@ -317,7 +317,9 @@ def createLogEntry(patient_id, employee_id, ts, conn, c, color):
         Output:
             An entry in the log containing @patient_id, @employee_id, @timestamp
     '''
-    if(color == 1):
+    if(color == 0):
+        warning_level = ('BLACK',)
+    elif(color == 1):
         warning_level = ('GREEN',)
     elif(color == 2):
         warning_level = ('YELLOW',)
@@ -340,10 +342,13 @@ def printLogEntry(color):
             GREEN == 1
             ORANGE == 2
             RED == 3
+            BLACK == 0
     '''
 
     # Make sure the color is correct and that there will be no errors
-    if(color == 1):
+    if(color == 0):
+        symbol = ('BLACK',)
+    elif(color == 1):
         symbol = ('GREEN',)
     elif(color == 2):
         symbol = ('YELLOW',)
@@ -357,7 +362,7 @@ def printLogEntry(color):
     c = conn.cursor()
 
     # Fetch all entries in the log with a given warning level (gree,orange,red) and print them
-    print(x.fetchall())
+    print(c.fetchall())
     for row in c.execute('SELECT * FROM entries WHERE warning_level=?', symbol):
         print(row)
 

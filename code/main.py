@@ -1,6 +1,7 @@
 from utils import *
 import os
-
+from datetime import datetime, timedelta
+import time
 
 def fetchJournal(patient_id, employee_id):
 	'''
@@ -27,36 +28,65 @@ def logEntry(patient_id, emlpoyee_id):
 	return 0
 
 
-def checkLog():
+def checkLog(delta):
 	'''
-	Goes through the log and checks if it si a red, orange or green entry.
-	A green entry: the entry was ok (Nothing wrong)
-	An orange entry: the journal was accessed, but not within the scheduled time (Something might be wrong)
-	A red entry: The journal was accessed when there was no relation between the patient and employee (Something was wrong)
-
-	Output:
-		Prints the number of green, orange and red entries
+		Goes through the log and checks if it si a red, orange or green entry.
+		A green entry: the entry was ok (Nothing wrong)
+		An orange entry: the journal was accessed, but not within the scheduled time (Something might be wrong)
+		A red entry: The journal was accessed when there was no relation between the patient and employee (Something was wrong)
+		Input:
+			Number of hours accepted-->yellow
+		Output:
+			Prints the number of green, orange and red entries
 	'''
 
-	greens 	= 0
-	yellows 	= 0
-	reds 	= 0
 
-	conn = sqlite3.connect('log.db')
+	conn_log = sqlite3.connect('log.db')
+	c_log = conn_log.cursor()
+	conn = sqlite3.connect('journalert.db')
 	c = conn.cursor()
 
-	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "GREEN"):
-		greens = greens + 1
-	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "YELLOW"):
-		yellows = yellows + 1
-	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "RED"):
-		reds = reds + 1
+	count = 0
+	no_schedules = 0;
+	for row in c_log.execute("SELECT * from entries WHERE warning_level='%s'" % 'BLACK'):
+		entryTime = row[2]
+		patient_id = row[0]
+		employee_id = row[1]
+		print(entryTime + ":00")
+		entry_datetime = time.strptime(entryTime, "%d.%m.%Y %H:%M")
+		# print(entry_datetime)
+		# entry_datetime.tm_hour =  12
+		# print(deltaFrom)
+		# deltaTo = 0
+		print("NOW:",datetime.now() + timedelta(hours = 2))
+
+		# print(entry_datetime + timedelta(hours=2))
+
+		for row in c.execute("SELECT * FROM schedules WHERE patient_id = ? AND employee_id = ?", (patient_id,employee_id)):
+			no_schedules = 1
+			timeFrom = row[3]
+			timeTo = row[4]
+
+			appointment_datetime_from = time.strptime(timeFrom, "%d.%m.%Y %H:%M")
+			appointment_datetime_to = time.strptime(timeTo, "%d.%m.%Y %H:%M")
+
+			if entry_datetime >= appointment_datetime_from and entry_datetime <= appointment_datetime_to:
+				 # It's GREEN!
+				 print("GREEN")
+
+			# if entry_datetime >= (appointment_datetime_from + delta) and entry_datetime <= (appointment_datetime_to + delta):
+			# 	# it's YELLOW
+			# 	print("YELLOw")
+
+		if(no_schedules == 1):
+			# No existing schedule
+			# It's RED!
+			print("RED")
 
 
-	print("GREEN: ", greens)
-	print("YELLOW: ", yellows)
-	print("RED: ", reds)
-	return 0
+
+
+
 
 
 def returnAccessed(patient_id):
@@ -72,13 +102,12 @@ def returnAccessed(patient_id):
 
 
 def main():
-	os.remove('journalert.db')
-	os.remove('log.db')
-	initializeDatabase()
-	fillJournAlert(500, 200, 300)
-	fillLog(100, 90, 5, 5)
-
-	checkLog()
+	# os.remove('journalert.db')
+	# os.remove('log.db')
+	# initializeDatabase()
+	# fillJournAlert(500, 200, 300)
+	# fillLog(100, 90, 5, 5)
+	checkLog(24)
 
 
 if __name__ == '__main__':
