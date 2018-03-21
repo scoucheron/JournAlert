@@ -11,10 +11,10 @@ NTEST = 5
 
 def run_correctness_test():
     # Percentages of
+    number_fetches = 1000
     green_percentage = 80
     yellow_percentage = 10
     red_percentage = 10
-    number_fetches = 10
 
     # The percantes above gives the following numbers
     correct_green = number_fetches*(green_percentage/100)
