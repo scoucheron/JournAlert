@@ -24,7 +24,7 @@ def initializeDatabase():
     conn_log = sqlite3.connect('log.db')
     c_log = conn_log.cursor()
 
-    c_log.execute("""CREATE TABLE entries(patient_id, employee_id, ts timestamp, warning_level text)""")
+    c_log.execute("""CREATE TABLE entries(entry_id integer PRIMARY KEY, patient_id, employee_id, ts timestamp, warning_level text)""")
 
     #Save the changes
     conn_log.commit()
@@ -138,14 +138,15 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
     # Open a connection to the JournAlert database
     conn = sqlite3.connect('journalert.db')
     c = conn.cursor()
-
+    entry_id = 0
     # Create green entries
     for x in range(number_green):
         c.execute('SELECT * FROM schedules')
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
+        createLogEntry(entry_id, all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
+        entry_id = entry_id + 1
 
     # Create orange entries
     for x in range(number_orange):
@@ -153,7 +154,8 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
+        createLogEntry(entry_id, all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
+        entry_id = entry_id + 1
 
     # Create red entries
     for x in range(number_red):
@@ -162,7 +164,8 @@ def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
         c.execute('SELECT * from employees')
         e_id = c.fetchone()
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(1, 1, '2018-03-20 14:00:00', conn_log, c_log, 4)
+        createLogEntry(entry_id, 1, 1, '2018-03-20 14:00:00', conn_log, c_log, 4)
+        entry_id = entry_id + 1
 
 
 def createPatient(patient_id, name, journal_id, conn, c):
@@ -321,7 +324,7 @@ def createAppointment(appointment_id, patient_id, employee_id, timeFrom, timeTo,
     conn.commit()
 
 
-def createLogEntry(patient_id, employee_id, ts, conn, c, color):
+def createLogEntry(entry_id, patient_id, employee_id, ts, conn, c, color):
     '''
     Create an entry in the log
         Input:
@@ -344,7 +347,7 @@ def createLogEntry(patient_id, employee_id, ts, conn, c, color):
     else:
         sys.exit("Input color was wrong. (Has to be green [1], orange [2], red [3] or black [4]")
 
-    c.execute("INSERT INTO entries VALUES (?, ?, ?, ?)", (patient_id, employee_id, ts, warning_level[0]))
+    c.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?)", (entry_id, patient_id, employee_id, ts, warning_level[0]))
     conn.commit()
 
 

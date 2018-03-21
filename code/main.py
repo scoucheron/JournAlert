@@ -55,15 +55,17 @@ def checkLog(delta):
 
 	conn_log = sqlite3.connect('log.db')
 	c_log = conn_log.cursor()
+	c_log2 = conn_log.cursor()
 	conn = sqlite3.connect('journalert.db')
 	c = conn.cursor()
 	count = 0
 	for row in c_log.execute("SELECT * from entries WHERE warning_level='%s'" % 'BLACK'):
 		assign_colour = ""
 		no_schedules = 0;
-		entryTime = row[2]
-		patient_id = row[0]
-		employee_id = row[1]
+		entryTime = row[3]
+		patient_id = row[1]
+		employee_id = row[2]
+		entry_id = int(row[0])
 		entry_datetime = datetime.strptime(entryTime, "%Y-%m-%d %H:%M:%S")
 
 		for row in c.execute("SELECT * FROM schedules WHERE patient_id = ? AND employee_id = ?", (patient_id,employee_id)):
@@ -90,7 +92,11 @@ def checkLog(delta):
 			# It's RED!
 			assign_colour = "RED"
 
-		c_log.execute("UPDATE entries SET warning_level = ? WHERE patient_id = ? and employee_id = ? AND ts = ?", (assign_colour, patient_id, employee_id, entryTime))
+		print("color assigned: ", assign_colour)
+		c_log2.execute("UPDATE entries SET warning_level = ? WHERE  entry_id = ? ", (assign_colour, entry_id))
+
+	# c_log2.commit()	
+
 
 	conn_log.commit()
 	conn_log.close()
@@ -110,13 +116,13 @@ def printWarningLevels():
 	entries = c.fetchall()
 
 	for i in entries:
-		if(i[3] == "RED"):
+		if(i[4] == "RED"):
 			reds = reds + 1
-		elif(i[3] == "YELLOW"):
+		elif(i[4] == "YELLOW"):
 			yellows = yellows + 1
-		elif(i[3] == "GREEN"):
+		elif(i[4] == "GREEN"):
 			greens = greens + 1
-		elif(i[3] == "BLACK"):
+		elif(i[4] == "BLACK"):
 			blacks = blacks + 1
 
 
@@ -148,18 +154,17 @@ def returnAccessed(patient_id, start_date, end_date=datetime.now().replace(micro
 
 
 def main():
-	os.remove('journalert.db')
-	os.remove('log.db')
-	initializeDatabase()
-	fillJournAlert(500, 200, 300)
-	fillLog(100, 90, 5, 5)
-
-	start = '2018-05-03'
-	stop = '2018-05-03 17:00:00'
-	patient = 299
-	accesses = returnAccessed(patient, start, stop)
+	# os.remove('journalert.db')
+	# os.remove('log.db')
+	# initializeDatabase()
+	# fillJournAlert(500, 200, 300)
+	# fillLog(100, 90, 5, 5)
+	#
+	# start = '2018-05-03'
+	# stop = '2018-05-03 17:00:00'
+	# patient = 299
+	# accesses = returnAccessed(patient, start, stop)
 	checkLog(24)
-	time.sleep(5)
 	printWarningLevels()
 
 
