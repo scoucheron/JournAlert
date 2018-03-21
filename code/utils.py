@@ -50,10 +50,10 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
 
 
     for i in range(patient_number):
-        createPatient(i, c)
+        createPatient(i,str(i),conn, c)
 
     for i in range(employee_number):
-        createPatient(i,c)
+        createEmployee(i,conn, c)
 
     year        = "2018"
     month       = "05"
