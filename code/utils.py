@@ -287,7 +287,6 @@ def deleteAppointment(appointment_id, conn, c):
     c.execute("DELETE schedules WHERE id=?", (appointment_id))
     conn.commit()
 
-<<<<<<< HEAD
     ''' asserting that the entry has been deleted '''
     c.execute("SELECT id FROM schedules WHERE id = ?", (appointment_id))
     data = c.fetchone()
@@ -296,8 +295,6 @@ def deleteAppointment(appointment_id, conn, c):
     else:
         return False
 
-=======
->>>>>>> 20100445d5ff16927db8028c9eb46c6d0a066c96
 def createAppointment(patient_id, employee_id, timeFrom, timeTo, conn, c):
     '''
     Create an entry in the schedule

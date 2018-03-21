@@ -11,6 +11,8 @@ def fetchJournal(patient_id, employee_id):
 		Output:
 			A journal from a patient (fetches the ID)
 	'''
+	
+
 
     return 0
 
