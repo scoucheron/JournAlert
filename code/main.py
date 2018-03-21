@@ -1,6 +1,6 @@
 from utils import *
 import os
-import datetime
+
 
 
 def fetchJournal(patient_id, employee_id):
@@ -13,6 +13,28 @@ def fetchJournal(patient_id, employee_id):
 		Output:
 			A journal from a patient (fetches the ID)
 	'''
+	conn = sqlite3.connect('journalert.db')
+	c = conn.cursor()
+
+	conn2 = sqlite3.connect('log.db')
+	c2 = conn2.cursor()
+
+
+	c.execute('SELECT * FROM employees WHERE id = ?', (employee_id,))
+	data = c.fetchone()
+
+	if data is None:
+		print ("not a valid employee")
+		return False
+
+	c.execute('SELECT * from journals WHERE patient_id = ?', (patient_id,))
+
+	time_now = datetime.datetime.now().replace(microsecond=0)
+	createLogEntry(patient_id, employee_id, time_now, conn2, c2, 4)
+
+	print ("log entry created")
+
+
 	return 0
 
 def logEntry(patient_id, emlpoyee_id):
@@ -60,7 +82,7 @@ def checkLog():
 	return 0
 
 
-def returnAccessed(patient_id, start_date, end_date=datetime.datetime.now()):
+def returnAccessed(patient_id, start_date, end_date=datetime.datetime.now().replace(microsecond=0)):
 	'''
 	Fetches a patients accessed journal and who has accessed them
 		Input:
@@ -73,7 +95,8 @@ def returnAccessed(patient_id, start_date, end_date=datetime.datetime.now()):
 	conn = sqlite3.connect('log.db')
 	c = conn.cursor()
 
-	c.execute("SELECT * FROM entries WHERE patient_id = ? AND timestamp > ? AND timestamp < ?", (patient_id, start_date, end_date))
+
+	c.execute("SELECT * FROM entries WHERE patient_id = ? AND ts BETWEEN ? AND ?", (patient_id, start_date, end_date))
 	accesses = c.fetchall()
 
 	return accesses
@@ -85,10 +108,13 @@ def main():
 	# initializeDatabase()
 	# fillJournAlert(500, 200, 300)
 	# fillLog(100, 90, 5, 5)
+	#
+	# start = '2018-05-03'
+	# stop = '2018-05-03 17:00:00'
+	# patient = 299
+	# accesses = returnAccessed(patient, start, stop)
+	# print (accesses)
 
-	patient = 124
-	date = '02.05.2018 16:00'
-	accesses = returnAccessed(patient, date)
 	checkLog()
 
 
