@@ -4,7 +4,7 @@ import os
 import random
 import datetime
 
-def initializeDatabase():
+def initializeJournAlertDatabase():
     '''
     Initialization of the database (only have to do this once)
         ### ADD SCHEMA DESCRIPTION
@@ -20,6 +20,10 @@ def initializeDatabase():
     # Save the changes
     conn.commit()
 
+    #Close the connection
+    c.close()
+
+def initializeLogDataBase():
     #Database for the logEntry
     conn_log = sqlite3.connect('log.db')
     c_log = conn_log.cursor()
@@ -28,11 +32,8 @@ def initializeDatabase():
 
     #Save the changes
     conn_log.commit()
-
-    #Close the connection
     c_log.close()
-    c.close()
-    return 0
+
 
 
 def fillJournAlert(patient_number, schedule_number, employee_number):
@@ -106,7 +107,7 @@ def fillJournAlert(patient_number, schedule_number, employee_number):
 
 
 
-def fillLog(entry_number, green_percentage, yellow_percentage, red_percentage):
+def fillLog(entry_number, green_percentage, orange_percentage, red_percentage):
     '''
     NB! HAS TO BE CALLED AFTER journalert.db IS FILLED
     NB2! percentages has to be 100 in total
@@ -115,19 +116,19 @@ def fillLog(entry_number, green_percentage, yellow_percentage, red_percentage):
         Input:
             @entries: how many entries in the log that is to be created
             @green_percentage: percentage of green entries
-            @yellow_percentage: percentage of yellow entries
+            @orange_percentage: percentage of orange entries
             @red_percentage: percentage of red entries
     '''
 
     # Calculate how many of each entry there is
-    total_percentage = green_percentage + yellow_percentage + red_percentage
+    total_percentage = green_percentage + orange_percentage + red_percentage
 
     # Has to be 100% in total
     if(total_percentage != 100):
         sys.exit("The given percentages did not add up to 100")
 
     number_green = int(entry_number * (green_percentage/100))
-    number_yellow = int(entry_number * (yellow_percentage/100))
+    number_orange = int(entry_number * (orange_percentage/100))
     number_red = int(entry_number * (red_percentage/100))
 
     conn_log = sqlite3.connect('log.db')
@@ -143,15 +144,15 @@ def fillLog(entry_number, green_percentage, yellow_percentage, red_percentage):
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 1)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
 
-    # Create yellow entries
-    for x in range(number_yellow):
+    # Create orange entries
+    for x in range(number_orange):
         c.execute('SELECT * FROM schedules')
         # Fetch an entry
         all_appoint = c.fetchmany(number_green)
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 2)
+        createLogEntry(all_appoint[x][1], all_appoint[x][2], all_appoint[x][3], conn_log, c_log, 4)
 
     # Create red entries
     for x in range(number_red):
@@ -160,7 +161,7 @@ def fillLog(entry_number, green_percentage, yellow_percentage, red_percentage):
         c.execute('SELECT * from employees')
         e_id = c.fetchone()
         # Create an entry in the log with the correct time of checking the journal
-        createLogEntry(1, 1, '2018-03-20 14:00:00', conn_log, c_log, 3)
+        createLogEntry(1, 1, '2018-03-20 14:00:00', conn_log, c_log, 4)
 
 
 def createPatient(patient_id, name, journal_id, conn, c):
@@ -187,6 +188,8 @@ def createPatient(patient_id, name, journal_id, conn, c):
         return False
     else:
         return True
+
+
 
 def createJournal(patient_id, conn, c):
     '''
@@ -352,8 +355,9 @@ def printLogEntry(color):
 
         Colors:
             GREEN == 1
-            YELLOW == 2
+            ORANGE == 2
             RED == 3
+            BLACK == 0
     '''
 
     # Make sure the color is correct and that there will be no errors
@@ -364,7 +368,7 @@ def printLogEntry(color):
     elif(color == 3):
         symbol = ('RED',)
     elif(color == 4):
-        warning_level = ('BLACK',)
+        symbol = ('BLACK',)
     else:
         sys.exit("Input color was wrong. (Has to be green [1], orange [2], red [3] or black [4]")
 
@@ -372,7 +376,7 @@ def printLogEntry(color):
     conn = sqlite3.connect('log.db')
     c = conn.cursor()
 
-    # Fetch all entries in the log with a given warning level (gree,yellow,red) and print them
+    # Fetch all entries in the log with a given warning level (gree,orange,red) and print them
     print(c.fetchall())
     for row in c.execute('SELECT * FROM entries WHERE warning_level=?', symbol):
         print(row)

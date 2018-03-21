@@ -1,7 +1,7 @@
 from utils import *
 import os
-
-
+from datetime import datetime, timedelta
+import multiprocessing
 
 def fetchJournal(patient_id, employee_id):
 	'''
@@ -24,52 +24,107 @@ def fetchJournal(patient_id, employee_id):
 	data = c.fetchone()
 
 	if data is None:
-		print ("not a valid employee")
+		print ("Not a valid employee")
 		return False
 
 	c.execute('SELECT * from journals WHERE patient_id = ?', (patient_id,))
 
-	time_now = datetime.datetime.now().replace(microsecond=0)
+	time_now = datetime.now().replace(microsecond=0)
 	createLogEntry(patient_id, employee_id, time_now, conn2, c2, 4)
-
-	print ("log entry created")
-
 
 	return 0
 
-def checkLog():
-	'''
-	Goes through the log and checks if it si a red, orange or green entry.
-	A green entry: the entry was ok (Nothing wrong)
-	An orange entry: the journal was accessed, but not within the scheduled time (Something might be wrong)
-	A red entry: The journal was accessed when there was no relation between the patient and employee (Something was wrong)
 
-	Output:
-		Prints the number of green, orange and red entries
+
+def checkLog(delta):
+	'''
+		Goes through the log and checks if it si a red, orange or green entry.
+		A green entry: the entry was ok (Nothing wrong)
+		An orange entry: the journal was accessed, but not within the scheduled time (Something might be wrong)
+		A red entry: The journal was accessed when there was no relation between the patient and employee (Something was wrong)
+		Input:
+			Number of hours accepted-->yellow
+		Output:
+			Prints the number of green, orange and red entries
 	'''
 
-	greens 	= 0
+
+	conn_log = sqlite3.connect('log.db')
+	c_log = conn_log.cursor()
+	conn = sqlite3.connect('journalert.db')
+	c = conn.cursor()
+	count = 0
+	for row in c_log.execute("SELECT * from entries WHERE warning_level='%s'" % 'BLACK'):
+		assign_colour = ""
+		no_schedules = 0;
+		entryTime = row[2]
+		patient_id = row[0]
+		employee_id = row[1]
+		entry_datetime = datetime.strptime(entryTime, "%Y-%m-%d %H:%M:%S")
+
+		for row in c.execute("SELECT * FROM schedules WHERE patient_id = ? AND employee_id = ?", (patient_id,employee_id)):
+			no_schedules = 1
+			timeFrom = row[3]
+			timeTo = row[4]
+
+			time = timeFrom.split(' ')[1]
+			date = timeFrom.split(' ')[0]
+
+
+			appointment_datetime_from = datetime.strptime(timeFrom, "%Y-%m-%d %H:%M:%S")
+			appointment_datetime_to = datetime.strptime(timeTo, "%Y-%m-%d %H:%M:%S")
+
+			if entry_datetime >= (appointment_datetime_from - timedelta(hours=delta)) and entry_datetime <= (appointment_datetime_to + timedelta(hours=delta)):
+				assign_colour = "GREEN"
+
+			else:
+				assign_colour = "YELLOW"
+
+
+		if(no_schedules == 0):
+			# No existing schedule --> no relation between employee and patient in schedule
+			# It's RED!
+			assign_colour = "RED"
+
+		c_log.execute("UPDATE entries SET warning_level = ? WHERE patient_id = ? and employee_id = ? AND ts = ?", (assign_colour, patient_id, employee_id, entryTime))
+
+	conn_log.commit()
+	conn_log.close()
+
+def printWarningLevels():
+
+	greens = 0
 	yellows = 0
-	reds 	= 0
+	reds = 0
+	blacks = 0
 
 	conn = sqlite3.connect('log.db')
 	c = conn.cursor()
 
-	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "GREEN"):
-		greens = greens + 1
-	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "YELLOW"):
-		yellows = yellows + 1
-	for row in c.execute("SELECT * from entries WHERE warning_level='%s'" % "RED"):
-		reds = reds + 1
+	c.execute("SELECT * FROM entries")
+
+	entries = c.fetchall()
+
+	for i in entries:
+		if(i[3] == "RED"):
+			reds = reds + 1
+		elif(i[3] == "YELLOW"):
+			yellows = yellows + 1
+		elif(i[3] == "GREEN"):
+			greens = greens + 1
+		elif(i[3] == "BLACK"):
+			blacks = blacks + 1
 
 
-	print("GREEN: ", greens)
-	print("YELLOW: ", yellows)
-	print("RED: ", reds)
-	return 0
+	print("GREEN:	", greens)
+	print("YELLOW:	", yellows)
+	print("REDS:	", reds)
+	print("BLACKS:	", blacks)
 
+	conn.commit()
+	conn.close()
 
-def returnAccessed(patient_id, start_date, end_date=datetime.datetime.now().replace(microsecond=0)):
+def returnAccessed(patient_id, start_date, end_date=datetime.now().replace(microsecond=0)):
 	'''
 	Fetches a patients accessed journal and who has accessed them
 		Input:
@@ -82,26 +137,28 @@ def returnAccessed(patient_id, start_date, end_date=datetime.datetime.now().repl
 	conn = sqlite3.connect('log.db')
 	c = conn.cursor()
 
+
 	c.execute("SELECT * FROM entries WHERE patient_id = ? AND ts BETWEEN ? AND ?", (patient_id, start_date, end_date))
 	accesses = c.fetchall()
 
 	return accesses
 
 
-def main():
+def main(num_client):
 	# os.remove('journalert.db')
 	# os.remove('log.db')
-	# initializeDatabase()
-	# fillJournAlert(500, 200, 300)
-	# fillLog(100, 90, 5, 5)
-	#
-	# start = '2018-05-03'
-	# stop = '2018-05-03 17:00:00'
-	# patient = 299
-	# accesses = returnAccessed(patient, start, stop)
-	# print (accesses)
 
-	checkLog()
+	number_request = num_client * 100
+
+	random_ids = []
+
+	for x in range(number_request):
+		tup = (random.randint(1,100), random.randint(1,100))
+		random_ids.append(tup)
+
+	p = multiprocessing.Pool(num_client)
+	p.starmap(fetchJournal, random_ids)
+
 
 
 if __name__ == '__main__':
@@ -109,6 +166,6 @@ if __name__ == '__main__':
 	try:
 		num_client = int(sys.argv[1])
 	except:
-		sys.exit("The arguments are as follows (both as given as integers): \n \t size: the size of the paxos cluster \n \t treshold: upper threshold of concurrent clients\n\n  Example: ./env 3 4 \t will run the evaluation with a cluster size of 3 and threshold 4")
+		sys.exit("Argument is as follows \n \t number of clients \n\t \t \n Usage: python3 main.py 5")
 
 	main(num_client)
