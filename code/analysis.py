@@ -5,10 +5,55 @@ import numpy as np
 import sys, os, time
 import subprocess as sp
 from utils import *
+from main import *
 
 NTEST = 5
 
-def run_test(num_client):
+def run_correctness_test():
+    # Percentages of
+    number_fetches = 1000
+    green_percentage = 80
+    yellow_percentage = 10
+    red_percentage = 10
+
+    # The percantes above gives the following numbers
+    correct_green = number_fetches*(green_percentage/100)
+    correct_yellow = number_fetches*(yellow_percentage/100)
+    correct_red = number_fetches*(red_percentage/100)
+
+
+    # Delete log database is it already exists
+    try:
+        os.remove('log.db')
+    except OSError:
+        pass
+
+    # Delete journalert database if it already exists
+    try:
+        os.remove('journalert.db')
+    except OSError:
+        pass
+
+
+    #Initialize
+    initializeJournAlertDatabase()
+    initializeLogDataBase()
+    fillJournAlert(50,20,30)
+    fillLog(number_fetches, green_percentage, yellow_percentage, red_percentage)
+    checkLog(2)
+    green, yellow, red, black = printWarningLevels()
+
+    calculated_green = correct_green - green
+    calculated_yellow = correct_yellow - yellow
+    calculated_red = correct_red - red
+
+    print("Log entries: ", 10)
+    print("Percentages: \n \t green [%d percent] \n\t yellow [%d percent] \n\t red [%d percent] " % (green_percentage, yellow_percentage, red_percentage))
+    print("This should give the following number of colors:  \n\t green: %d \n\t yellow: %d \n\t red: %d " % (correct_green, correct_yellow, correct_red))
+    print("\n\n The values we got when testing: \n\t green: %d \n\t yellow: %d \n\t red: %d " % (green, yellow, red ))
+    print("With the missed calculations of :  \n\t green: %d \n\t yellow: %d \n\t red: %d " % (calculated_green, calculated_yellow, calculated_red ))
+
+def run_stress_test(num_client):
     result_list = np.array([])
     stdR_list = np.array([])
 
@@ -140,4 +185,5 @@ if __name__=='__main__':
     except:
         sys.exit("Argument is as follows \n \t number of clients \n\t \t \n Usage: python3 main.py 5")
 
-    run_test(num_client)
+    run_correctness_test()
+    # run_stress_test(num_client)
