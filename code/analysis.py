@@ -34,6 +34,7 @@ def run_correctness_test():
     except OSError:
         pass
 
+
     #Initialize
     initializeJournAlertDatabase()
     initializeLogDataBase()
